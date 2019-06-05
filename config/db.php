@@ -4,7 +4,7 @@
 return [
     'class' => 'yii\db\Connection',
     'dsn' => 'sqlite:'.dirname(__DIR__) . '/db/sqlite.db',
-    'enableSchemaCache' => false,
+    'enableSchemaCache' => true,
     'charset' => 'utf8',
 ];
 

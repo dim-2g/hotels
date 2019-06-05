@@ -1,0 +1,17 @@
+.admin-box{
+    font-size: 14px;
+}
+
+.admin-box h1{
+    font-size: 20px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.admin-box p{
+    margin-bottom: 15px;
+}
+
+.admin-box .grid-view .summary{
+    margin-bottom: 8px;
+}

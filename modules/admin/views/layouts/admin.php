@@ -8,10 +8,11 @@ use yii\helpers\Html;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
-use app\assets\AppAsset;
+use app\assets\AppAdminAsset;
 use app\assets\AppAssetBottom;
+use yii\helpers\Url;
 
-AppAsset::register($this);
+AppAdminAsset::register($this);
 AppAssetBottom::register($this);
 ?>
 <?php $this->beginPage() ?>
@@ -22,7 +23,7 @@ AppAssetBottom::register($this);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php $this->registerCsrfMetaTags() ?>
-    <title><?= Html::encode($this->title) ?></title>
+    <title>Админпанель | <?= Html::encode($this->title) ?></title>
     <link rel="icon" href="/i/favicon.png">
     <?php $this->head() ?>
 <body>
@@ -31,7 +32,7 @@ AppAssetBottom::register($this);
     <div class="headerMobile">
 
         <div class="headerMobile__flex js-serach-active-hide">
-            <a href="/" class="headerMobile__logo">
+            <a href="/tophotels/" class="headerMobile__logo">
                 <img src="/i/th-logo.png" width="112" height="40" class="mr10">
             </a>
 
@@ -207,7 +208,7 @@ AppAssetBottom::register($this);
     <header class="header">
 
         <div class="header-cnt header-cnt_index ">
-            <a href="/" class="header-logo">
+            <a href="/tophotels/" class="header-logo">
                 <img src="/i/th-logo.png" alt="">
             </a>
             <div class="header-nav">
@@ -264,7 +265,7 @@ AppAssetBottom::register($this);
                 </div>
             </div>
             <div class="exit__block">
-                <div class="header__exit js-show-auth-link" id="jsExit">Выйти</div>
+                <div class="header__exit js-show-auth-link" id="jsExit"><a href="<?= Url::to(['/admin'])?>">Админка</a></div>
             </div>
         </div>
 
@@ -342,12 +343,14 @@ AppAssetBottom::register($this);
 
 
 
-    <div class="tour-selection-box">
 
-        <?= Alert::widget() ?>
-        <?= $content ?>
-
+    <div class="admin-box">
+        <div class="container">
+            <?= Alert::widget() ?>
+            <?= $content ?>
+        </div>
     </div>
+
 
 
     <div class="container">
@@ -1092,7 +1095,7 @@ AppAssetBottom::register($this);
                                         <br>
                                         Администраторы ресурса<br>
                                         www.tophotels.ru<span id="ctrlcopy"><br><br>Читать полностью на&nbsp;<a
-                                                    href="https://www.tophotels.ru/about/agreement">https://www.tophotels.ru/about/agreement</a></span>
+                                                href="https://www.tophotels.ru/about/agreement">https://www.tophotels.ru/about/agreement</a></span>
                                     </p></div>
 
 
@@ -1404,7 +1407,7 @@ AppAssetBottom::register($this);
                                         <br>
                                         Администраторы ресурса<br>
                                         www.tophotels.ru<span id="ctrlcopy"><br><br>Читать полностью на&nbsp;<a
-                                                    href="https://www.tophotels.ru/about/agreement">https://www.tophotels.ru/about/agreement</a></span>
+                                                href="https://www.tophotels.ru/about/agreement">https://www.tophotels.ru/about/agreement</a></span>
                                     </p></div>
 
 
