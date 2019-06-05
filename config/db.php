@@ -1,14 +1,14 @@
 <?php
 
-/*
+
 return [
     'class' => 'yii\db\Connection',
     'dsn' => 'sqlite:'.dirname(__DIR__) . '/db/sqlite.db',
     'enableSchemaCache' => true,
     'charset' => 'utf8',
 ];
-*/
 
+/*
 return [
     'class' => 'yii\db\Connection',
     'dsn' => 'mysql:host=localhost;dbname=hotel',
@@ -21,3 +21,5 @@ return [
     //'schemaCacheDuration' => 60,
     //'schemaCache' => 'cache',
 ];
+
+*/

@@ -36,4 +36,13 @@ class BookingForm extends ActiveRecord
         ];
     }
 
+    public function attributeLabels()
+    {
+        return [
+            'name' => 'Ваше имя',
+            'phone' => 'Ваш телефон',
+            'email' => 'Ваш Email',
+        ];
+    }
+
 }

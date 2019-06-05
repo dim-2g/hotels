@@ -116,7 +116,12 @@ $js = <<<JS
     $('.test-btn').on('click', function() {
        $.ajax({
             url: '/booking/custom',
-            data: {"message": "123", "name": "Petr", "phone": "8(765)432-10-10", "email":"test@test.ru"},
+            data: {
+                "message": "123", 
+                "name-disabled": "Petr", 
+                "phone": "8(765)432-10-10", 
+                "email":"test@test.ru"
+            },
             type: "POST",
             success: function() {
                 console.log('OK');

@@ -10,6 +10,7 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\BookingForm;
+use app\helpers\BookingHelper;
 
 class BookingController extends Controller
 {
@@ -36,21 +37,16 @@ class BookingController extends Controller
     {
 
         $bookingForm = new BookingForm();
-        $bookingForm->name = 'Ivan';
-        $bookingForm->email = 'ivan@test.ru';
-        $bookingForm->phone = '7777';
-        $bookingForm->message = 'Проверка';
-        $bookingForm->save(false);
-        echo '<pre>';
-        print_r(Yii::$app->request->post());
-        echo '</pre>';
-
         if ($bookingForm->load(Yii::$app->request->post(), '')) {
             if ($bookingForm->validate()) {
-                $bookingForm->save();
+                $resultSave = $bookingForm->save();
             } else {
+
+                $errors = BookingHelper::prepareErrorsAjaxForm($bookingForm->getErrors());
+
                 echo '<pre>';
                 print_r($bookingForm->getErrors());
+                print_r($errors);
                 echo '</pre>';
             }
         }
