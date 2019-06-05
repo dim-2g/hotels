@@ -156,3 +156,7 @@ a {
         padding-bottom: 120px;
     }
 }
+
+.form-panel__success{
+    display: none;
+}

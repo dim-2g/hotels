@@ -11,12 +11,7 @@ use yii\db\ActiveRecord;
  */
 class BookingForm extends ActiveRecord
 {
-    /*
-    public $message;
-    public $name;
-    public $email;
-    public $phone;
-*/
+
     public static function tableName()
     {
         return 'booking';
@@ -28,11 +23,10 @@ class BookingForm extends ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'message', 'phone'], 'required'],
-            ['email', 'email'],
-            ['name', 'safe'],
-            ['message', 'safe'],
-            ['phone', 'safe'],
+            ['parametrs', 'required', 'message' => 'Поле "Укажите страну, курорт или отель" обязательное для заполнения'],
+            ['name', 'required', 'message' => 'Поле "Ваше имя" обязательное для заполнения'],
+            ['phone', 'required', 'message' => 'Поле "Телефон" обязательное для заполнения'],
+            ['email', 'email', 'message' => 'Поле не соответствует формату "ххххх@xxxx.xxxx"'],
         ];
     }
 

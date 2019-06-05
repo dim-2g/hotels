@@ -1,5 +1,6 @@
 jQuery(document).ready(function () {
 
+    /*
     $('.bth__loader').on('click', function () {
         $(this).addClass('bth__loader--animate');
     });
@@ -7,6 +8,7 @@ jQuery(document).ready(function () {
         $('.js-add-error').addClass('has-error');
         $('.bth__inp-block-eye').hide();
     });
+    */
 //Подсказки для полей
     $('.bth__inp.js-stop-label').on('focus', function () {
         $(this).addClass('focus');

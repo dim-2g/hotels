@@ -35,25 +35,22 @@ class BookingController extends Controller
 
     public function actionCustom()
     {
+        $response = [
+            'success' => false,
+            'errors' => [],
+        ];
 
         $bookingForm = new BookingForm();
         if ($bookingForm->load(Yii::$app->request->post(), '')) {
             if ($bookingForm->validate()) {
-                $resultSave = $bookingForm->save();
+                $bookingForm->save();
+                BookingHelper::sendMail($bookingForm, 'dim-2g@yandex.ru');
+                $response['success'] = true;
             } else {
-
-                $errors = BookingHelper::prepareErrorsAjaxForm($bookingForm->getErrors());
-
-                echo '<pre>';
-                print_r($bookingForm->getErrors());
-                print_r($errors);
-                echo '</pre>';
+                $response['errors'] = BookingHelper::prepareErrorsAjaxForm($bookingForm->getErrors());
             }
         }
-        echo '<pre>';
-        print_r($bookingForm);
-        echo '</pre>';
-        die('CustomRequest');
+        return json_encode($response);
     }
 
 }
