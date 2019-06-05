@@ -30,6 +30,9 @@ class BookingForm extends ActiveRecord
         ];
     }
 
+    /*
+     *
+     */
     public function attributeLabels()
     {
         return [
@@ -37,6 +40,14 @@ class BookingForm extends ActiveRecord
             'phone' => 'Ваш телефон',
             'email' => 'Ваш Email',
         ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if ($insert) {
+            $this->created_at = date("Y-m-d H:i:s");
+        }
+        return parent::beforeSave($insert);
     }
 
 }
