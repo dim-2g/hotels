@@ -9,11 +9,12 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
-use app\models\BookingForm;
+use app\models\Booking;
 use app\helpers\BookingHelper;
 
 class BookingController extends Controller
 {
+
 
     public function beforeAction($action)
     {
@@ -23,16 +24,18 @@ class BookingController extends Controller
         return parent::beforeAction($action);
     }
 
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
         return $this->render('index');
     }
 
+    /*
+     * Обрабатываем поступающий ajax запрос
+     * Возвращаем json
+     * success = true в случае успеха
+     * success = false если есть ошибки
+     * errors - массив ошибок (поле => описание ошибки)
+     */
     public function actionCustom()
     {
         $response = [
@@ -40,14 +43,14 @@ class BookingController extends Controller
             'errors' => [],
         ];
 
-        $bookingForm = new BookingForm();
-        if ($bookingForm->load(Yii::$app->request->post(), '')) {
-            if ($bookingForm->validate()) {
-                $bookingForm->save();
-                BookingHelper::sendMail($bookingForm, 'dim-2g@yandex.ru');
+        $booking = new Booking();
+        if ($booking->load(Yii::$app->request->post(), '')) {
+            if ($booking->validate()) {
+                $booking->save();
+                BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
                 $response['success'] = true;
             } else {
-                $response['errors'] = BookingHelper::prepareErrorsAjaxForm($bookingForm->getErrors());
+                $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
             }
         }
         return json_encode($response);

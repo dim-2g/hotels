@@ -9,10 +9,10 @@ use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
-use app\assets\AppAssetBottom;
+use app\assets\AppBottomAsset;
 
 AppAsset::register($this);
-AppAssetBottom::register($this);
+AppBottomAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -80,7 +80,7 @@ AppAssetBottom::register($this);
         <div class="headerMobile__registration">
             <div class="tabs-block">
                 <div class="tabs-bar tabs-bar--no-adaptive">
-                    <div id="authorization" class="tab tab--reg active">Вход</div>
+                    <div id="authorization" class="tab tab--reg">Вход</div>
                     <div id="registration" class="tab tab--reg">Регистрация</div>
 
                     <div class="line--reg" style="width: 89.125px; left: 50.25px;"></div>

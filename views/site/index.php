@@ -11,7 +11,7 @@ $this->title = 'TopHotels';
     </div>
 
 
-    <div class="panel" id="formPanel" >
+   <div class="panel form-panel" id="formPanel" >
 
         <div class="form-panel__success">
             <div class="bth__cnt fz18 bold">Спасибо, Ваша заявка отправлена и будет обработана в ближайшее время.</div>
@@ -127,7 +127,7 @@ $js = <<<JS
 $(document).ready(function() {
     $('.btn-custom-order').on('click', function() {
         var buttonCustomBooking = $(this);
-        var selectors = {
+        var fieldSelectors = {
             'parametrs': '#parametrs',
             'name': '#name1',
             'phone': '#phone1',
@@ -140,10 +140,10 @@ $(document).ready(function() {
         $.ajax({
             url: '/booking/custom',
             data: {
-                'parametrs': $(selectors.parametrs).val(), 
-                'name': $(selectors.name).val(), 
-                'phone': $(selectors.phone).val(), 
-                'email': $(selectors.email).val()
+                'parametrs': $(fieldSelectors.parametrs).val(), 
+                'name': $(fieldSelectors.name).val(), 
+                'phone': $(fieldSelectors.phone).val(), 
+                'email': $(fieldSelectors.email).val()
             },
             type: 'POST',
             dataType: 'json',
@@ -154,7 +154,7 @@ $(document).ready(function() {
                     $('.form-panel__success').fadeIn(500);
                 } else {
                     response.errors.forEach(function(item) {
-                        setFieldError(selectors[item.key], item.text);
+                        setFieldError(fieldSelectors[item.key], item.text);
                     });
                 }
                 buttonCustomBooking.removeClass('bth__loader--animate');

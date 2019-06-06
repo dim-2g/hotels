@@ -3,6 +3,7 @@
 namespace app\helpers;
 
 use Yii;
+use yii\helpers\Url;
 
 class BookingHelper{
 
@@ -33,11 +34,19 @@ class BookingHelper{
         $message[] = "Телефон: {$bookingRecord->phone}";
         $message[] = "Email {$bookingRecord->email}";
 
-        return Yii::$app->mailer->compose()
+        return Yii::$app->mailer->compose('views/booking', [
+                'orderNumber' => $bookingRecord->id,
+                'orderName' => $bookingRecord->name,
+                'orderPhone' => $bookingRecord->phone,
+                'orderParametrs' => $bookingRecord->parametrs,
+                'briefLink' => Url::to(['admin/booking/view', 'id' => $bookingRecord->id], true),
+                'briefList' => Url::to(['admin/booking'], true),
+                'emailTo' => $emailTo,
+                'supportLink' => 'https://tophotels.ru/feedback',
+            ])
             ->setFrom('hotels@modxguru.ru')
             ->setTo($emailTo)
             ->setSubject('Добавлена новая заявка')
-            ->setHtmlBody(implode("<br />", $message))
             ->send();
     }
 

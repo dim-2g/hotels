@@ -9,11 +9,11 @@ use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAdminAsset;
-use app\assets\AppAssetBottom;
+use app\assets\AppBottomAsset;
 use yii\helpers\Url;
 
 AppAdminAsset::register($this);
-AppAssetBottom::register($this);
+AppBottomAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>

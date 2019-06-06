@@ -13,7 +13,7 @@ use yii\web\AssetBundle;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
-class AppAssetBottom extends AssetBundle
+class AppBottomAsset extends AssetBundle
 {
     public $basePath = '@webroot';
     public $baseUrl = '@web';

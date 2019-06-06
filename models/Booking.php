@@ -9,7 +9,7 @@ use yii\db\ActiveRecord;
 /**
  * BookingForm is the model behind the contact form.
  */
-class BookingForm extends ActiveRecord
+class Booking extends ActiveRecord
 {
 
     public static function tableName()
