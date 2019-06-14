@@ -5,10 +5,9 @@ var selectorDepartmentCity = '.sumo-department';
 
 $(document).ready(function () {
 
-    setSumoSelect($(selectorDirection), 'не важно');
+    setSumoSelect($(selectorDirection), 'укажите страну');
     setSumoSelect($(selectorDirectionCity), 'не важно');
     setSumoSelect($(selectorDepartmentCity), 'без перелета');
-
     initDirectionSelect();
     initDepartmentCitySelect();
 
@@ -53,18 +52,17 @@ $(document).ready(function () {
 
     });
 
-    $('.js-add-field').on('click', function () {
-        var hiddenTourRow = $('.tour-selection-wrap-in--hidden:eq(0)');
+    $('.js-add-field, .js-add-hotel').on('click', function () {
+        var hiddenTourRow = $(this).parents('.tour-selection-wrap').find('.tour-selection-wrap-in--hidden:eq(0)');
         if (hiddenTourRow.length > 0) {
             hiddenTourRow.removeClass('tour-selection-wrap-in--hidden');
         };
     });
 
-    $('.js-del-field').on('click', function () {
+    $('.js-del-field, .js-del-hotel').on('click', function () {
         var currentTourRow = $(this).parents('['+tourRowAttrSelector+']');
         currentTourRow.addClass('tour-selection-wrap-in--hidden');
     });
-
 
 });
 
@@ -271,12 +269,13 @@ setFormWrapperHeight = function() {
  * imageFlag - путь до картинки
  */
 setCountryFlag = function(tourRowNumber, imageFlag) {
-    if (imageFlag === '') {
+    if (imageFlag == undefined) {
         return;
     }
     var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block--direction');
     inputWrapper.addClass('bth__inp-block--has-flag');
     inputWrapper.find('.bth__inp-lbl').addClass('bth__inp-lbl--center');
+    inputWrapper.find('.bth__inp').addClass('tour-selection__country');
     inputWrapper.find('.tour-selection__flag').css({"background-image":"url('"+imageFlag+"')"});
 };
 
@@ -287,6 +286,7 @@ setCountryFlag = function(tourRowNumber, imageFlag) {
 resetCountryFlag = function(tourRowNumber) {
     var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block');
     inputWrapper.removeClass('bth__inp-block--has-flag');
-    inputWrapper.find('.bth__inp-block--direction .bth__inp-lbl').removeClass('bth__inp-lbl--center');
+    inputWrapper.find('.bth__inp-lbl').removeClass('bth__inp-lbl--center');
+    inputWrapper.find('.bth__inp').removeClass('tour-selection__country');
     inputWrapper.find('.tour-selection__flag').css({"background-image":"none"});
 };

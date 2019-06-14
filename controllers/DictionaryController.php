@@ -23,6 +23,7 @@ class DictionaryController extends Controller
     public function actionCountries()
     {
         $countries = CountryDictionary::find()
+            ->where(['active' => 1, 'trash' => 0])
             ->asArray()
             ->orderBy(['name' => SORT_ASC])
             ->all();
@@ -38,7 +39,7 @@ class DictionaryController extends Controller
     public function actionCities($countryId)
     {
         $cities = CityDictionary::find()
-            ->where(['country' => $countryId])
+            ->where(['country' => $countryId, 'active' => 1, 'trash' => 0])
             ->asArray()
             ->orderBy(['name' => SORT_ASC])
             ->all();
@@ -49,7 +50,7 @@ class DictionaryController extends Controller
     public function actionDepartment()
     {
         $citiesFirst = CityDictionary::find()
-            ->where(['name' => ['Москва', 'Санкт-Петербург'] ])
+            ->where(['name' => ['Москва', 'Санкт-Петербург', 'active' => 1, 'trash' => 0] ])
             ->orderBy(['name' => SORT_ASC])
             ->asArray()
             ->all();
@@ -91,7 +92,9 @@ class DictionaryController extends Controller
                                 'Челябинск',
                                 'Шымкент',
                                 'Якутск',
-                                'Ярославль']
+                                'Ярославль'],
+                        'active' => 1,
+                        'trash' => 0
             ])
             ->asArray()
             ->orderBy(['name' => SORT_ASC])

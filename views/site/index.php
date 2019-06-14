@@ -109,7 +109,7 @@ $this->title = 'TopHotels';
                         <div class="bth__inp-block bth__inp-block--direction">
                             <span class="bth__inp-lbl">Страна поездки</span>
                             <div class="tour-selection__flag lsfw-flag lsfw-flag-30"></div>
-                            <div class="bth__inp tour-selection__country  js-show-formDirections uppercase"></div>
+                            <div class="bth__inp js-show-formDirections uppercase"></div>
                             <div class="formDirections w100p" style="display: none;">
                                 <div class="formDirections__wrap w100p">
                                     <div class="formDirections__top  formDirections__top-line">
@@ -824,231 +824,128 @@ $this->title = 'TopHotels';
 
                     </div>
                 </div>
-                <div class="tour-selection-wrap-in tour-selection-wrap-flex ">
-                    <div class="tour-selection-field tour-selection-field--740">
-                        <div class="bth__inp-block js-show-formDirections js-formDirections--big-mobile">
 
-                            <span class="bth__inp-lbl ">Добавить отель</span>
-                            <span class="bth__inp"></span>
-                        </div>
+                <div class="tour-selection-wrap">
+                <? for ($i = 0; $i < 3; $i++) { ?>
+                    <div data-tour-row="<?=$i?>" class="tour-selection-wrap-in tour-selection-wrap-flex <? if ($i > 0) { ?>tour-selection-wrap-in--hidden<? } ?>">
+                        <div class="tour-selection-field tour-selection-field--740">
+                            <div class="bth__inp-block js-show-formDirections js-formDirections--big-mobile">
 
-                        <div class="formDirections formDirections--big-mobile w100p">
-                            <div class="formDirections__wrap w100p">
-                                <div class="formDirections__top formDirections__top--white">
+                                <span class="bth__inp-lbl ">Добавить отель</span>
+                                <span class="bth__inp"></span>
+                            </div>
 
-                                    <i class="formDirections__bottom-close"></i>
-                                    <div class="formDirections__top-tab super-grey">
-                                        Добавить отель
+                            <div class="formDirections formDirections--big-mobile w100p">
+                                <div class="formDirections__wrap w100p">
+                                    <div class="formDirections__top formDirections__top--white">
+
+                                        <i class="formDirections__bottom-close"></i>
+                                        <div class="formDirections__top-tab super-grey">
+                                            Добавить отель
+                                        </div>
                                     </div>
-                                </div>
 
 
-                                <div class="formDirections__bottom">
+                                    <div class="formDirections__bottom">
 
-                                    <div class="formDirections__search">
-                                        <input class="bth__inp" type="text" placeholder="Поиск отеля">
-                                    </div>
-                                    <div class="formDirections__wrap  formDirections__bottom-blocks-cut">
-
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Mriya Resort &amp; Spa (Мрия Резорт энд Спа) </span>5*
-                                            </div>
-                                            <span class="formDirections__count">Агитос Антониос</span>
+                                        <div class="formDirections__search">
+                                            <input class="bth__inp" type="text" placeholder="Поиск отеля">
                                         </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa</span> 5*
-                                            </div>
-                                            <span class="formDirections__count">Кампос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya </span>5*
-                                            </div>
-                                            <span class="formDirections__count">Каравостаси</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
+                                        <div class="formDirections__wrap  formDirections__bottom-blocks-cut">
 
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya</span> 5*
-
-                                            </div>
-                                            <span class="formDirections__count">Никитари</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+                                                    <span class="formDirections__cut"> Mriya Resort &amp; Spa (Мрия Резорт энд Спа) </span>5*
                                                 </div>
-                                                <span class="formDirections__cut"> Mriya Resort &amp; Spa (Мрия Резорт энд Спа) </span>5*
+                                                <span class="formDirections__count">Агитос Антониос</span>
                                             </div>
-                                            <span class="formDirections__count">Агитос Антониос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+                                                    <span class="formDirections__cut"> Resort &amp; Spa</span> 5*
                                                 </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa</span> 5*
+                                                <span class="formDirections__count">Кампос</span>
                                             </div>
-                                            <span class="formDirections__count">Кампос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+                                                    <span class="formDirections__cut"> Resort &amp; Spa Mriya </span>5*
                                                 </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya </span>5*
+                                                <span class="formDirections__count">Каравостаси</span>
                                             </div>
-                                            <span class="formDirections__count">Каравостаси</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+
+                                                    <span class="formDirections__cut"> Resort &amp; Spa Mriya</span> 5*
+
                                                 </div>
-
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya</span> 5*
-
+                                                <span class="formDirections__count">Никитари</span>
                                             </div>
-                                            <span class="formDirections__count">Никитари</span>
-                                        </div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+                                                    <span class="formDirections__cut"> Mriya Resort &amp; Spa (Мрия Резорт энд Спа) </span>5*
+                                                </div>
+                                                <span class="formDirections__count">Агитос Антониос</span>
+                                            </div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+                                                    <span class="formDirections__cut"> Resort &amp; Spa</span> 5*
+                                                </div>
+                                                <span class="formDirections__count">Кампос</span>
+                                            </div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
+                                                    <span class="formDirections__cut"> Resort &amp; Spa Mriya </span>5*
+                                                </div>
+                                                <span class="formDirections__count">Каравостаси</span>
+                                            </div>
+                                            <div class="formDirections__bottom-item">
+                                                <div class="formDirections__city">
+                                                    <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                                                        <div class="hint">Россия</div>
+                                                    </div>
 
+                                                    <span class="formDirections__cut"> Resort &amp; Spa Mriya</span> 5*
+
+                                                </div>
+                                                <span class="formDirections__count">Никитари</span>
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
+
+                        <? if ($i == 0) { ?>
+                            <span class="tour-selection-plus hide-1023 js-add-hotel"><i class="fas fa-plus"></i></span>
+                        <? } else { ?>
+                            <span class=" tour-selection-plus js-del-hotel"><i class="fas fa-minus"></i></span>
+                        <? } ?>
                     </div>
-                    <span class="tour-selection-plus hide-1023 js-add-hotel"><i class="fas fa-plus"></i></span>
+                    <? } ?>
                 </div>
-
-                <div class="tour-selection-wrap-in tour-selection-wrap-flex js-show-add-hotel "
-                     style="display: none">
-                    <div class="tour-selection-field tour-selection-field--740">
-                        <div class="bth__inp-block js-show-formDirections js-formDirections--big-mobile">
-
-                            <span class="bth__inp-lbl ">Добавить отель</span>
-                            <span class="bth__inp"></span>
-                        </div>
-                        <div class="formDirections formDirections--big-mobile w100p">
-                            <div class="formDirections__wrap w100p">
-                                <div class="formDirections__top formDirections__top--white">
-
-                                    <i class="formDirections__bottom-close"></i>
-                                    <div class="formDirections__top-tab super-grey">
-                                        Добавить отель
-                                    </div>
-                                </div>
-
-
-                                <div class="formDirections__bottom">
-
-                                    <div class="formDirections__search">
-                                        <input class="bth__inp" type="text" placeholder="Поиск отеля">
-                                    </div>
-                                    <div class="formDirections__wrap  formDirections__bottom-blocks-cut">
-
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Mriya Resort &amp; Spa (Мрия Резорт энд Спа) </span>5*
-                                            </div>
-                                            <span class="formDirections__count">Агитос Антониос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa</span> 5*
-                                            </div>
-                                            <span class="formDirections__count">Кампос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya </span>5*
-                                            </div>
-                                            <span class="formDirections__count">Каравостаси</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya</span> 5*
-
-                                            </div>
-                                            <span class="formDirections__count">Никитари</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Mriya Resort &amp; Spa (Мрия Резорт энд Спа) </span>5*
-                                            </div>
-                                            <span class="formDirections__count">Агитос Антониос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa</span> 5*
-                                            </div>
-                                            <span class="formDirections__count">Кампос</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya </span>5*
-                                            </div>
-                                            <span class="formDirections__count">Каравостаси</span>
-                                        </div>
-                                        <div class="formDirections__bottom-item">
-                                            <div class="formDirections__city">
-                                                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
-                                                    <div class="hint">Россия</div>
-                                                </div>
-
-                                                <span class="formDirections__cut"> Resort &amp; Spa Mriya</span> 5*
-
-                                            </div>
-                                            <span class="formDirections__count">Никитари</span>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </div>
-                    <span class=" tour-selection-plus  js-del-hotel"><i class="fas fa-minus"></i></span>
-                </div>
-
 
             </div>
 
