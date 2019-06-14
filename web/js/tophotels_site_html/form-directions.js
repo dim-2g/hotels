@@ -36,7 +36,7 @@ $(document).ready(function () {
         }
 
     });
-*/
+
     $('.js-added-show1 ').on('click', function () {
         $('.js-added-show2 ').removeClass('hidden');
     });
@@ -56,7 +56,7 @@ $(document).ready(function () {
         $('.js-ages').hide();
     });
 
-
+*/
 
     /*контрол параетров*/
     $('.js-show-currencys').on('click', function () {
