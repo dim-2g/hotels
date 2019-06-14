@@ -54,13 +54,20 @@ class BookingHelper{
     public static function prepareCountryFlags($countries)
     {
         foreach ($countries as &$country) {
-            $flagFileName = trim(strtolower($country['name_eng']));
-            $fullFlagFileName = $_SERVER['DOCUMENT_ROOT']  . static::$flagsDirectory . $flagFileName . '.jpg';
+            $flagFileName = static::findCountryFlagName($country['name_eng']);
+            $fullFlagFileName = $_SERVER['DOCUMENT_ROOT']  . static::$flagsDirectory . $flagFileName;
             if (is_readable($fullFlagFileName)) {
-                $country['flag_image'] = static::$flagsDirectory . $flagFileName . '.jpg';
+                $country['flag_image'] = static::$flagsDirectory . $flagFileName;
             }
         }
         return $countries;
     }
 
+    private static function findCountryFlagName($countryName) {
+        $flagFileName = trim(strtolower($countryName));
+        $flagFileName = str_replace('  ', ' ', $flagFileName);
+        $flagFileName = str_replace(' ', '_', $flagFileName);
+        $flagFileName .= '.jpg';
+        return $flagFileName;
+    }
 }

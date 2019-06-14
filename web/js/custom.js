@@ -12,6 +12,7 @@ $(document).ready(function () {
     initDirectionSelect();
     initDepartmentCitySelect();
 
+    //при клике на контрол с выпадающим списком
     $('body').on('click', '.js-show-formDirections', function() {
         $(this).parent().find('.formDirections').slideDown();
     });
@@ -26,6 +27,8 @@ $(document).ready(function () {
         setSumoSelect($(this), countryName, countryId);
         setCountryFlag(tourRowNumber, countryFlag);
         initDirectionCitySelect(countryId, tourRowNumber);
+
+        console.log('req', lsfw.bookingRequest);
     });
 
     //при клике на конкретном городе
@@ -43,46 +46,11 @@ $(document).ready(function () {
     });
 
 
-
+    //при клике на Отправить в нестандартном запросе
     $('.btn-custom-order').on('click', function() {
         var buttonCustomBooking = $(this);
-        var fieldSelectors = {
-            'parametrs': '#parametrs',
-            'name': '#name1',
-            'phone': '#phone1',
-            'email': '#mail3'
-        };
+        submitCustomForm(buttonCustomBooking);
 
-        $('#formPanel').find('.has-error').removeClass('has-error');
-        buttonCustomBooking.addClass('bth__loader--animate');
-
-        $.ajax({
-            url: '/booking/custom',
-            data: {
-                'parametrs': $(fieldSelectors.parametrs).val(),
-                'name': $(fieldSelectors.name).val(),
-                'phone': $(fieldSelectors.phone).val(),
-                'email': $(fieldSelectors.email).val()
-            },
-            type: 'POST',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    setFormWrapperHeight();
-                    $('.form-panel__wrapper').hide();
-                    $('.form-panel__success').fadeIn(500);
-                } else {
-                    response.errors.forEach(function(item) {
-                        setFieldError(fieldSelectors[item.key], item.text);
-                    });
-                }
-                buttonCustomBooking.removeClass('bth__loader--animate');
-            },
-            error: function() {
-                console.log('Error');
-                buttonCustomBooking.removeClass('bth__loader--animate');
-            }
-        });
     });
 
     $('.js-add-field').on('click', function () {
@@ -101,6 +69,63 @@ $(document).ready(function () {
 });
 
 /*
+ * отправляем форму НЕстандартного запроса
+ * buttonCustomBooking - объект кнопки сабмита
+ */
+submitCustomForm = function(buttonCustomBooking) {
+    var fieldSelectors = {
+        'parametrs': '#parametrs',
+        'name': '#name1',
+        'phone': '#phone1',
+        'email': '#mail3'
+    };
+
+    $('#formPanel').find('.has-error').removeClass('has-error');
+    /*
+    buttonCustomBooking.addClass('bth__loader--animate');
+    проверка осуществляется только на бекэнде, так как в ТЗ ничего по данному
+    поводу не было указано и анимацю я запускал тут сразу,
+    но после проверки тестировщиком потребовалось анимацию запускать,
+    только если далее следует успешная отправка. Поэтому сейчас добавил отложенный запуск анимации,
+    а при возвращении ошибки очищаю таймаут. Если сервер подвиснет, при обработке полей,
+    то через полсекунды запустится анимация, и пользователь будет понимать, что процесс выполняется
+    */
+
+    var timeoutAnimation = setTimeout(function(){
+        buttonCustomBooking.addClass('bth__loader--animate');
+    }, 500);
+
+    $.ajax({
+        url: '/booking/custom',
+        data: {
+            'parametrs': $(fieldSelectors.parametrs).val(),
+            'name': $(fieldSelectors.name).val(),
+            'phone': $(fieldSelectors.phone).val(),
+            'email': $(fieldSelectors.email).val()
+        },
+        type: 'POST',
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                setFormWrapperHeight();
+                $('.form-panel__wrapper').hide();
+                $('.form-panel__success').fadeIn(500);
+            } else {
+                clearTimeout(timeoutAnimation);
+                response.errors.forEach(function(item) {
+                    setFieldError(fieldSelectors[item.key], item.text);
+                });
+            }
+            buttonCustomBooking.removeClass('bth__loader--animate');
+        },
+        error: function() {
+            console.log('Error');
+            buttonCustomBooking.removeClass('bth__loader--animate');
+        }
+    });
+};
+
+/*
  * загружает список стран
  */
 initDirectionSelect = function() {
@@ -112,7 +137,7 @@ initDirectionSelect = function() {
             addCountryInAllSelects(response);
         },
         error: function() {
-            console.log('Error');
+            console.log('Error in method initDirectionSelect');
         }
     });
 };
@@ -129,7 +154,7 @@ initDepartmentCitySelect = function() {
             addDepartmentCityInAllSelects(response);
         },
         error: function() {
-            console.log('Error');
+            console.log('Error in method initDepartmentCitySelect');
         }
     });
 };
@@ -145,8 +170,6 @@ setSumoSelect = function(element, name, value = 0) {
     var wrapperSelect = element.parents('.tour-selection-field');
     var labelSelect = wrapperSelect.find('.bth__inp-lbl');
     var textSelect = wrapperSelect.find('.bth__inp');
-    console.log(wrapperSelect);
-    console.log(name);
     if (name !== '') {
         labelSelect.addClass('active');
         textSelect.text(name);
@@ -191,7 +214,8 @@ addDepartmentCityInAllSelects = function(jsonCities) {
 
 
 /*
- * загружает список городов
+ * загружает список городов для конкретной страны
+ * countryId - id страны из словаря
  */
 initDirectionCitySelect = function(countryId, tourRowNumber) {
     $.ajax({
@@ -200,7 +224,6 @@ initDirectionCitySelect = function(countryId, tourRowNumber) {
         type: 'GET',
         dataType: 'json',
         success: function(response) {
-            console.log(response);
             addCitiesSelect(response, tourRowNumber);
         },
         error: function() {
@@ -209,32 +232,45 @@ initDirectionCitySelect = function(countryId, tourRowNumber) {
     });
 };
 
-
+/*
+ * Загружаем список городов в нужный селект
+ */
 addCitiesSelect = function(jsonCities, tourRowNumber) {
     var selectCity = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find(selectorDirectionCity);
-    console.log('['+tourRowAttrSelector+'="'+tourRowNumber+'"]');
+    selectCity[0].sumo.removeAll();
     jsonCities.forEach(function(item) {
         selectCity[0].sumo.add(item.id, item.name);
     });
 
 };
 
-
+/*
+ * Выводим сообщение об ошибки заполнения поля
+ * устанавливаем текст подсказки
+ */
 setFieldError = function(selector, textHint = 'Поле не должно быть пустым') {
     var inputWrapper = $(selector).parents('.bth__inp-block');
     inputWrapper.addClass('has-error');
     inputWrapper.find('.bth__cnt').text(textHint);
 };
 
+/*
+ * Фиксируем высоту контейнера формы, чтобы после успешной отправки
+ * не прыгала высота
+ */
 setFormWrapperHeight = function() {
     var wrapper = $('.form-panel__wrapper');
     var height = wrapper.outerHeight();
     wrapper.parents('div').css({'min-height': height});
 };
 
-
+/*
+ * устанавливаем изображение флага в селект
+ * отодвигаем название лейбла
+ * tourRowNumber - номер строки, в которой выбрали страну
+ * imageFlag - путь до картинки
+ */
 setCountryFlag = function(tourRowNumber, imageFlag) {
-    console.log('flag', imageFlag);
     if (imageFlag === '') {
         return;
     }
@@ -244,6 +280,10 @@ setCountryFlag = function(tourRowNumber, imageFlag) {
     inputWrapper.find('.tour-selection__flag').css({"background-image":"url('"+imageFlag+"')"});
 };
 
+/*
+ * сбрасываем изображение флага в селекте
+ * tourRowNumber - номер строки, в которой выбрали страну
+ */
 resetCountryFlag = function(tourRowNumber) {
     var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block');
     inputWrapper.removeClass('bth__inp-block--has-flag');
