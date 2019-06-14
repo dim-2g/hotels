@@ -147,12 +147,14 @@ $(document).ready(function () {
 
 
 //Добавляем и удаляем контролы
+    /*
     $('.js-add-field').on('click', function () {
         $('.js-show-added-field').show();
     });
     $('.js-del-field').on('click', function () {
         $('.js-show-added-field').hide();
     });
+    */
 
     $('.js-add-hotel ').on('click', function () {
         $('.js-show-add-hotel').show();

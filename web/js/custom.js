@@ -41,6 +41,60 @@ $(document).ready(function () {
 
 
 
+    $('.btn-custom-order').on('click', function() {
+        var buttonCustomBooking = $(this);
+        var fieldSelectors = {
+            'parametrs': '#parametrs',
+            'name': '#name1',
+            'phone': '#phone1',
+            'email': '#mail3'
+        };
+
+        $('#formPanel').find('.has-error').removeClass('has-error');
+        buttonCustomBooking.addClass('bth__loader--animate');
+
+        $.ajax({
+            url: '/booking/custom',
+            data: {
+                'parametrs': $(fieldSelectors.parametrs).val(),
+                'name': $(fieldSelectors.name).val(),
+                'phone': $(fieldSelectors.phone).val(),
+                'email': $(fieldSelectors.email).val()
+            },
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    setFormWrapperHeight();
+                    $('.form-panel__wrapper').hide();
+                    $('.form-panel__success').fadeIn(500);
+                } else {
+                    response.errors.forEach(function(item) {
+                        setFieldError(fieldSelectors[item.key], item.text);
+                    });
+                }
+                buttonCustomBooking.removeClass('bth__loader--animate');
+            },
+            error: function() {
+                console.log('Error');
+                buttonCustomBooking.removeClass('bth__loader--animate');
+            }
+        });
+    });
+
+    $('.js-add-field').on('click', function () {
+        var hiddenTourRow = $('.tour-selection-wrap-in--hidden:eq(0)');
+        if (hiddenTourRow.length > 0) {
+            hiddenTourRow.removeClass('tour-selection-wrap-in--hidden');
+        };
+    });
+
+    $('.js-del-field').on('click', function () {
+        var currentTourRow = $(this).parents('['+tourRowAttrSelector+']');
+        currentTourRow.addClass('tour-selection-wrap-in--hidden');
+    });
+
+
 });
 
 /*
@@ -158,4 +212,17 @@ addCitiesSelect = function(jsonCities, tourRowNumber) {
         selectCity[0].sumo.add(item.id, item.name);
     });
 
+};
+
+
+setFieldError = function(selector, textHint = 'Поле не должно быть пустым') {
+    var inputWrapper = $(selector).parents('.bth__inp-block');
+    inputWrapper.addClass('has-error');
+    inputWrapper.find('.bth__cnt').text(textHint);
+};
+
+setFormWrapperHeight = function() {
+    var wrapper = $('.form-panel__wrapper');
+    var height = wrapper.outerHeight();
+    wrapper.parents('div').css({'min-height': height});
 };

@@ -104,7 +104,7 @@ $this->title = 'TopHotels';
             <div class=" js-types-search-tours-blocks">
 
                 <? for ($i = 0; $i < 3; $i++) { ?>
-                <div data-tour-row="<?=$i?>" class="tour-selection-wrap-in tour-selection-wrap-flex">
+                <div data-tour-row="<?=$i?>" class="tour-selection-wrap-in tour-selection-wrap-flex <? if ($i > 0) { ?>tour-selection-wrap-in--hidden<? } ?>">
                     <div class="tour-selection-field tour-selection-field--250 ">
                         <div class="bth__inp-block">
                             <span class="bth__inp-lbl active">Страна поездки</span>
@@ -1191,59 +1191,10 @@ $this->title = 'TopHotels';
 <?php
 $js = <<<JS
 $(document).ready(function() {
-    $('.btn-custom-order').on('click', function() {
-        var buttonCustomBooking = $(this);
-        var fieldSelectors = {
-            'parametrs': '#parametrs',
-            'name': '#name1',
-            'phone': '#phone1',
-            'email': '#mail3'
-        };
-        
-        $('#formPanel').find('.has-error').removeClass('has-error');
-        buttonCustomBooking.addClass('bth__loader--animate');
-        
-        $.ajax({
-            url: '/booking/custom',
-            data: {
-                'parametrs': $(fieldSelectors.parametrs).val(), 
-                'name': $(fieldSelectors.name).val(), 
-                'phone': $(fieldSelectors.phone).val(), 
-                'email': $(fieldSelectors.email).val()
-            },
-            type: 'POST',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    setFormWrapperHeight();
-                    $('.form-panel__wrapper').hide();
-                    $('.form-panel__success').fadeIn(500);
-                } else {
-                    response.errors.forEach(function(item) {
-                        setFieldError(fieldSelectors[item.key], item.text);
-                    });
-                }
-                buttonCustomBooking.removeClass('bth__loader--animate');
-            },
-            error: function() {
-                console.log('Error');
-                buttonCustomBooking.removeClass('bth__loader--animate');
-            }
-        }); 
-    });
+    
 });
 
-setFieldError = function(selector, textHint = 'Поле не должно быть пустым') {
-    var inputWrapper = $(selector).parents('.bth__inp-block');
-    inputWrapper.addClass('has-error');
-    inputWrapper.find('.bth__cnt').text(textHint);    
-}
 
-setFormWrapperHeight = function() {
-    var wrapper = $('.form-panel__wrapper');
-    var height = wrapper.outerHeight();
-    wrapper.parents('div').css({'min-height': height});
-}
 
 JS;
 

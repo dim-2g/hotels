@@ -45,6 +45,7 @@ class AppAsset extends AssetBundle
         '/css/tophotels_site_html/agree-pp.css',
         '/css/tophotels_site_html/tabs-bar-mobile.css',
         '/css/site.css',
+        '/css/custom.css',
     ];
     public $js = [
         '/js/jquery.311.min.js',
