@@ -7,6 +7,7 @@ use Yii;
 use yii\web\Controller;
 use app\models\CountryDictionary;
 use app\models\CityDictionary;
+use app\models\HotelDictionary;
 
 
 class DictionaryController extends Controller
@@ -103,6 +104,25 @@ class DictionaryController extends Controller
         $cities = array_merge($citiesFirst, $citiesAll);
 
         return json_encode($cities);
+    }
+
+    /*
+     * Получаем список отелей
+     * $countryId - id страны
+     */
+    public function actionHotels()
+    {
+        $hotels = HotelDictionary::find()
+            ->where(['active' => 1, 'trash' => 0])
+            ->asArray()
+            ->orderBy(['name' => SORT_ASC])
+            ->all();
+
+        echo '<pre>';
+        print_r($hotels);
+        echo '</pre>';
+        die();
+        return json_encode($hotels);
     }
 
 }

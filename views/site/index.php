@@ -686,7 +686,6 @@ $this->title = 'TopHotels';
                         </span>
                     <? } ?>
                 </div>
-
                 <? } ?>
 
 
