@@ -1,3 +1,16 @@
 .tour-selection-wrap .tour-selection-wrap-in--hidden{
     display: none;
 }
+.tour-selection-wrap .tour-selection-wrap-in .tour-selection__flag.lsfw-flag{
+    display: none;
+    background-position: 0 0;
+    background-image: none;
+    background-position-x: -5px;
+    width: 60px;
+    height: 33px;
+}
+
+
+.tour-selection-wrap .tour-selection-wrap-in .bth__inp-block--has-flag .tour-selection__flag{
+    display: block;
+}

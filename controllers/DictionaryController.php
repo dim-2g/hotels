@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\helpers\BookingHelper;
 use Yii;
 use yii\web\Controller;
 use app\models\CountryDictionary;
@@ -25,6 +26,7 @@ class DictionaryController extends Controller
             ->asArray()
             ->orderBy(['name' => SORT_ASC])
             ->all();
+        $countries = BookingHelper::prepareCountryFlags($countries);
 
         return json_encode($countries);
     }

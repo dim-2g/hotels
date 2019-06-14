@@ -20,8 +20,11 @@ $(document).ready(function () {
     $('body').on('change', selectorDirection, function() {
         var countryId = $(this).val();
         var countryName = $(this).find('option:selected').text().trim();
+        var countryFlag = $(this).find('option:selected').attr('data-flag');
         var tourRowNumber = $(this).parents('['+tourRowAttrSelector+']').attr(tourRowAttrSelector);
+        resetCountryFlag(tourRowNumber);
         setSumoSelect($(this), countryName, countryId);
+        setCountryFlag(tourRowNumber, countryFlag);
         initDirectionCitySelect(countryId, tourRowNumber);
     });
 
@@ -167,7 +170,9 @@ addSumoSelect = function(elementHtml, name, value = 0) {
 addCountryInAllSelects = function(jsonCountry) {
     $(selectorDirection).each(function(index, elementSelect) {
         jsonCountry.forEach(function(item) {
-            elementSelect.sumo.add(item.id, item.name);
+            var option = new Option(item.name, item.id);
+            $(option).attr("data-flag", item.flag_image);
+            elementSelect.sumo.addHTML(option);
         });
     });
 };
@@ -225,4 +230,23 @@ setFormWrapperHeight = function() {
     var wrapper = $('.form-panel__wrapper');
     var height = wrapper.outerHeight();
     wrapper.parents('div').css({'min-height': height});
+};
+
+
+setCountryFlag = function(tourRowNumber, imageFlag) {
+    console.log('flag', imageFlag);
+    if (imageFlag === '') {
+        return;
+    }
+    var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block--direction');
+    inputWrapper.addClass('bth__inp-block--has-flag');
+    inputWrapper.find('.bth__inp-lbl').addClass('bth__inp-lbl--center');
+    inputWrapper.find('.tour-selection__flag').css({"background-image":"url('"+imageFlag+"')"});
+};
+
+resetCountryFlag = function(tourRowNumber) {
+    var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block');
+    inputWrapper.removeClass('bth__inp-block--has-flag');
+    inputWrapper.find('.bth__inp-block--direction .bth__inp-lbl').removeClass('bth__inp-lbl--center');
+    inputWrapper.find('.tour-selection__flag').css({"background-image":"none"});
 };

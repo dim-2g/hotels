@@ -7,7 +7,7 @@ $(document).ready(function () {
         $(this).closest('.formDirections').hide();
     });
     /*контрол готсей*/
-
+/*
     $('.formDirections__guest-btn .formDirections__guest-btn-icon').hover(function () {
             $(this).prevAll().addClass('hover-active');
             $(this).nextAll().removeClass('hover-active');
@@ -36,6 +36,7 @@ $(document).ready(function () {
         }
 
     });
+*/
     $('.js-added-show1 ').on('click', function () {
         $('.js-added-show2 ').removeClass('hidden');
     });

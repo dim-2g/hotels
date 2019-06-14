@@ -106,9 +106,10 @@ $this->title = 'TopHotels';
                 <? for ($i = 0; $i < 3; $i++) { ?>
                 <div data-tour-row="<?=$i?>" class="tour-selection-wrap-in tour-selection-wrap-flex <? if ($i > 0) { ?>tour-selection-wrap-in--hidden<? } ?>">
                     <div class="tour-selection-field tour-selection-field--250 ">
-                        <div class="bth__inp-block">
-                            <span class="bth__inp-lbl active">Страна поездки</span>
-                            <div class="bth__inp tour-selection__country  js-show-formDirections"></div>
+                        <div class="bth__inp-block bth__inp-block--direction">
+                            <span class="bth__inp-lbl">Страна поездки</span>
+                            <div class="tour-selection__flag lsfw-flag lsfw-flag-30"></div>
+                            <div class="bth__inp tour-selection__country  js-show-formDirections uppercase"></div>
                             <div class="formDirections w100p" style="display: none;">
                                 <div class="formDirections__wrap w100p">
                                     <div class="formDirections__top  formDirections__top-line">

@@ -7,6 +7,7 @@ use yii\helpers\Url;
 
 class BookingHelper{
 
+    public static $flagsDirectory = '/images/flags/';
     /*
      * Проводит трансформацию массива ошибок для ajax ответа
      */
@@ -48,6 +49,18 @@ class BookingHelper{
             ->setTo($emailTo)
             ->setSubject('Добавлена новая заявка')
             ->send();
+    }
+
+    public static function prepareCountryFlags($countries)
+    {
+        foreach ($countries as &$country) {
+            $flagFileName = trim(strtolower($country['name_eng']));
+            $fullFlagFileName = $_SERVER['DOCUMENT_ROOT']  . static::$flagsDirectory . $flagFileName . '.jpg';
+            if (is_readable($fullFlagFileName)) {
+                $country['flag_image'] = static::$flagsDirectory . $flagFileName . '.jpg';
+            }
+        }
+        return $countries;
     }
 
 }
