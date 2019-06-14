@@ -125,7 +125,7 @@ $this->title = 'TopHotels';
                         </div>
                     </div>
                     <div class="tour-selection-field tour-selection-field--180">
-                        <div class="bth__inp-block js-show-formDirections">
+                        <div class="bth__inp-block bth__inp-block--direction-city js-show-formDirections">
                             <span class="bth__inp-lbl ">Город</span>
                             <span class="bth__inp  uppercase "></span>
                         </div>
@@ -142,7 +142,7 @@ $this->title = 'TopHotels';
                         </div>
                     </div>
                     <div class="tour-selection-field tour-selection-field--200">
-                        <div class="bth__inp-block js-show-formDirections ">
+                        <div class="bth__inp-block bth__inp-block--department js-show-formDirections ">
                             <span class="bth__inp-lbl ">Город вылета</span>
                             <span class="bth__inp uppercase"></span>
                         </div>
@@ -712,30 +712,7 @@ $this->title = 'TopHotels';
                                 </div>
 
                                 <div class="SumoSelect formDirections__SumoSelect formDirections__SumoSelect-search">
-                                    <select id="sumo-department">
-
-                                        <option>Москва</option>
-                                        <option>Санкт-Петербург</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Москва</option>
-                                        <option>Санкт-Петербург</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-                                        <option>Абакан</option>
-                                        <option>Агзу</option>
-
-                                    </select>
+                                    <select class="sumo-department"></select>
                                 </div>
 
                             </div>

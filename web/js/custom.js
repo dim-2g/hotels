@@ -2,17 +2,57 @@ var selectorDirection = '.sumo-direction';
 var selectorDirectionCity = '.sumo-direction-city';
 var tourRowAttrSelector = 'data-tour-row';
 var selectorDepartmentCity = '.sumo-department';
+var tour = {
+    directions: [],
+    hotels: [],
+
+    addDirection: function(index, key, value) {
+        if (this.directions[index]) {
+            this.directions[index][key] = value;
+        } else {
+            this.directions[index] = {[key]: value};
+        }
+        this.directions[index].active = 1;
+    },
+
+    hasDirection: function(index) {
+        if (this.directions[index]) {
+            if (this.directions[index] !== '') {
+                return true;
+            }
+        }
+        return false;
+    },
+
+    /*
+     * Ставим признак неактивности, когда нажимаем на минус, чтобы не отправлять данные в заявке
+     * но при этом и не удаляем эти данные
+     */
+    hideDirection: function(index) {
+        this.directions[index].active = 0;
+    }
+
+};
 
 $(document).ready(function () {
 
+    //визуально устанавливаем дефолтные значения
     setSumoSelect($(selectorDirection), 'укажите страну');
     setSumoSelect($(selectorDirectionCity), 'не важно');
     setSumoSelect($(selectorDepartmentCity), 'без перелета');
+    //загружаем список стран
     initDirectionSelect();
+    //загружаем города вылета
     initDepartmentCitySelect();
-
     //при клике на контрол с выпадающим списком
     $('body').on('click', '.js-show-formDirections', function() {
+        //получаем номер строки на которой производим действия
+        var tourRowNumber = findCurrentRowNumber($(this));
+        if (!tour.hasDirection(tourRowNumber)) {
+            //устанавливаем дефолтный заголовок выпадающго списка городов, если страна не выбрана
+            setCaptionCitySelect(tourRowNumber, 'укажите страну');
+        }
+        //разворачиваем выпадающий список
         $(this).parent().find('.formDirections').slideDown();
     });
 
@@ -22,26 +62,45 @@ $(document).ready(function () {
         var countryName = $(this).find('option:selected').text().trim();
         var countryFlag = $(this).find('option:selected').attr('data-flag');
         var tourRowNumber = $(this).parents('['+tourRowAttrSelector+']').attr(tourRowAttrSelector);
+        //сбрасываем изображение флага
         resetCountryFlag(tourRowNumber);
+        //визуально показываем какая страна выбрана
         setSumoSelect($(this), countryName, countryId);
+        //устанавливаем изображение флага
         setCountryFlag(tourRowNumber, countryFlag);
+        //заполняем селект с городами по выбранной стране
         initDirectionCitySelect(countryId, tourRowNumber);
-
-        console.log('req', lsfw.bookingRequest);
+        //устанавливаем заголовок выпадающго списка городов = названию страны
+        setCaptionCitySelect(tourRowNumber, countryName);
+        //добавляем в объект заказа выбранную страну
+        tour.addDirection(tourRowNumber, 'countryId', countryId);
+        console.log('tour', tour.directions);
     });
 
     //при клике на конкретном городе
     $('body').on('change', selectorDirectionCity, function() {
         var cityId = $(this).val();
         var cityName = $(this).find('option:selected').text().trim();
+        //визуально показываем какой город выбран
         setSumoSelect($(this), cityName, cityId);
+        //получаем номер строки на которой производим действия
+        var tourRowNumber = findCurrentRowNumber($(this));
+        //добавляем в объект заказа выбранный город
+        tour.addDirection(tourRowNumber, 'cityId', cityId);
+        console.log('tour', tour.directions);
     });
 
     //при клике на городе вылета
     $('body').on('change', selectorDepartmentCity, function() {
         var cityId = $(this).val();
         var cityName = $(this).find('option:selected').text().trim();
+        //визуально показываем какой город выбран
         setSumoSelect($(this), cityName, cityId);
+        //получаем номер строки на которой производим действия
+        var tourRowNumber = findCurrentRowNumber($(this));
+        //добавляем в объект заказа выбранный город вылета
+        tour.addDirection(tourRowNumber, 'departmentId', cityId);
+        console.log('tour', tour.directions);
     });
 
 
@@ -52,14 +111,28 @@ $(document).ready(function () {
 
     });
 
-    $('.js-add-field, .js-add-hotel').on('click', function () {
+    $('.js-add-field').on('click', function () {
         var hiddenTourRow = $(this).parents('.tour-selection-wrap').find('.tour-selection-wrap-in--hidden:eq(0)');
         if (hiddenTourRow.length > 0) {
             hiddenTourRow.removeClass('tour-selection-wrap-in--hidden');
         };
     });
 
-    $('.js-del-field, .js-del-hotel').on('click', function () {
+    $('.js-del-field').on('click', function () {
+        var currentTourRow = $(this).parents('['+tourRowAttrSelector+']');
+        currentTourRow.addClass('tour-selection-wrap-in--hidden');
+        var tourRowNumber = findCurrentRowNumber($(this));
+        tour.hideDirection(tourRowNumber);
+    });
+
+    $('.js-add-hotel').on('click', function () {
+        var hiddenTourRow = $(this).parents('.tour-selection-wrap').find('.tour-selection-wrap-in--hidden:eq(0)');
+        if (hiddenTourRow.length > 0) {
+            hiddenTourRow.removeClass('tour-selection-wrap-in--hidden');
+        };
+    });
+
+    $('.js-del-hotel').on('click', function () {
         var currentTourRow = $(this).parents('['+tourRowAttrSelector+']');
         currentTourRow.addClass('tour-selection-wrap-in--hidden');
     });
@@ -284,9 +357,24 @@ setCountryFlag = function(tourRowNumber, imageFlag) {
  * tourRowNumber - номер строки, в которой выбрали страну
  */
 resetCountryFlag = function(tourRowNumber) {
-    var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block');
+    var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block--direction');
     inputWrapper.removeClass('bth__inp-block--has-flag');
     inputWrapper.find('.bth__inp-lbl').removeClass('bth__inp-lbl--center');
     inputWrapper.find('.bth__inp').removeClass('tour-selection__country');
     inputWrapper.find('.tour-selection__flag').css({"background-image":"none"});
+};
+
+setCaptionCitySelect = function(tourRowNumber, caption) {
+    var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block--direction-city').next();
+    inputWrapper.find('.formDirections__top-tab').text(caption);
+};
+
+
+/*
+ * Возвращает номер строки, на которой производятся действия, начиная с нуля.
+ * element - текущий элемент jQuery взаимодействия пользователя с формой
+ */
+findCurrentRowNumber = function(element) {
+    var tourRowNumber = element.parents('['+tourRowAttrSelector+']').attr(tourRowAttrSelector);
+    return tourRowNumber;
 };
