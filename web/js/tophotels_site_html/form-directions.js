@@ -7,12 +7,14 @@ $(document).ready(function () {
         $(this).closest('.formDirections').hide();
     });
     /*контрол готсей*/
+
     $('.formDirections__guest-btn .formDirections__guest-btn-icon').hover(function () {
             $(this).prevAll().addClass('hover-active');
             $(this).nextAll().removeClass('hover-active');
             $(this).addClass('hover-active');
         }
     );
+
     $('.formDirections__guest-btn').hover(function () {
 
         },

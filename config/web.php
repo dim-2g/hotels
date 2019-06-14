@@ -2,6 +2,7 @@
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
+$dbDictionary = require __DIR__ . '/db_dict.php';
 
 $config = [
     'id' => 'basic',
@@ -19,6 +20,7 @@ $config = [
             'defaultRoute' => 'booking/index'
         ],
     ],
+    'layout' => 'main',
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
@@ -60,10 +62,24 @@ $config = [
             ],
         ],
         'db' => $db,
+        'dbDictionary' => $dbDictionary,
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+            ],
+        ],
+        'assetManager' => [
+            'bundles' => [
+                'yii\web\JqueryAsset' => [
+                    'js'=>[]
+                ],
+                'yii\bootstrap\BootstrapPluginAsset' => [
+                    'js'=>[]
+                ],
+                'yii\bootstrap\BootstrapAsset' => [
+                    'css' => [],
+                ],
             ],
         ],
     ],

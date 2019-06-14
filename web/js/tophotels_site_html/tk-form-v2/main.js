@@ -94,7 +94,7 @@ mytour.searchTours.main = new (function() {
         rv: null,
         me: [],
         pf: 0,
-        pt: 500000,
+        pt: 200000,
         ch1: null,
         ch2: null,
         ch3: null,

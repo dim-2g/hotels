@@ -1,69 +1,45 @@
 {
-    "name": "yiisoft/yii2-app-basic",
-    "description": "Yii 2 Basic Project Template",
-    "keywords": ["yii2", "framework", "basic", "project template"],
-    "homepage": "http://www.yiiframework.com/",
+    "name": "ls/app",
     "type": "project",
-    "license": "BSD-3-Clause",
-    "support": {
-        "issues": "https://github.com/yiisoft/yii2/issues?state=open",
-        "forum": "http://www.yiiframework.com/forum/",
-        "wiki": "http://www.yiiframework.com/wiki/",
-        "irc": "irc://irc.freenode.net/yii",
-        "source": "https://github.com/yiisoft/yii2"
-    },
-    "minimum-stability": "stable",
+    "license": "proprietary",
+
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "svn://svn.tophotels.site/th/branches",
+            "trunk-path": false,
+            "branches-path": false,
+            "tags-path": "branches/lsfw"
+        },
+        {"type": "composer", "url": "https://asset-packagist.org"}
+    ],
+
+    "minimum-stability": "dev",
     "require": {
-        "php": ">=5.4.0",
-        "yiisoft/yii2": "~2.0.14",
+        "php": ">=5.6.0",
+        "yiisoft/yii2": "~2.0.15",
+        "yiisoft/yii2-swiftmailer": "*",
+        "yiisoft/yii2-debug": "^2.0",
+        "yiisoft/yii2-gii": "~2.0",
         "yiisoft/yii2-bootstrap": "~2.0.0",
-        "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0"
+        "lightsoft/lib-ui-tour-filter": "^2.0"
     },
     "require-dev": {
-        "yiisoft/yii2-debug": "~2.1.0",
-        "yiisoft/yii2-gii": "~2.1.0",
-        "yiisoft/yii2-faker": "~2.0.0",
 
-        "codeception/base": "~2.3.0",
-        "codeception/verify": "~0.4.0",
-        "codeception/specify": "~0.4.6",
-        "symfony/browser-kit": ">=2.7 <=4.2.4"
     },
     "config": {
         "process-timeout": 1800,
-        "fxp-asset": {
-            "enabled": false
-        }
+        "secure-http": false
     },
     "scripts": {
-        "post-install-cmd": [
-            "yii\\composer\\Installer::postInstall"
-        ],
         "post-create-project-cmd": [
-            "yii\\composer\\Installer::postCreateProject",
-            "yii\\composer\\Installer::postInstall"
+            "yii\\composer\\Installer::postCreateProject"
+        ],
+        "post-package-install": [
+            "LibUiTourFilter\\AfterInstallModel::postPackageInstall"
+        ],
+        "post-package-update": [
+            "LibUiTourFilter\\AfterInstallModel::postPackageInstall"
         ]
-    },
-    "extra": {
-        "yii\\composer\\Installer::postCreateProject": {
-            "setPermission": [
-                {
-                    "runtime": "0777",
-                    "web/assets": "0777",
-                    "yii": "0755"
-                }
-            ]
-        },
-        "yii\\composer\\Installer::postInstall": {
-            "generateCookieValidationKey": [
-                "config/web.php"
-            ]
-        }
-    },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ]
+    }
 }

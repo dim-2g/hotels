@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\CountryDictionary;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -9,6 +10,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\Booking;
 
 class SiteController extends Controller
 {
@@ -61,7 +63,32 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $formData = [];
+        $dateNow = new \DateTime('+14day');
+        $formData['dateFrom'] = $dateNow->format('Y-m-d');
+        $dateNow->modify('+7day');
+        $formData['dateTo'] = $dateNow->format('Y-m-d');
+
+        $formData['nightFrom'] = 7;
+        $formData['nightTo'] = 14;
+
+        $formData['adults'] = 2;
+        $formData['children'] = 1;
+
+        $formData['countries'] = CountryDictionary::find()
+            ->where(['<', 'id', 100])
+            ->asArray()
+            ->orderBy(['name' => SORT_ASC])
+            ->all();
+
+        return $this->render('index', [
+            'data' => $formData
+        ]);
+    }
+
+    public function actionTest()
+    {
+        return $this->render('test', []);
     }
 
     /**
