@@ -14,3 +14,24 @@
 .tour-selection-wrap .tour-selection-wrap-in .bth__inp-block--has-flag .tour-selection__flag{
     display: block;
 }
+
+.hotel-search__place{
+    font-size: 14px;
+    font-weight: normal;
+    vertical-align: bottom;
+}
+
+.hotel-search__rating{
+    vertical-align: bottom;
+}
+
+.hotel-search__cut{
+    display: inline-block;
+    max-width: 270px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+    font-weight: bold;
+    font-size: 16px;
+}

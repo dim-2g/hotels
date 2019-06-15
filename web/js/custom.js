@@ -4,8 +4,6 @@ var tourRowAttrSelector = 'data-tour-row';
 var selectorDepartmentCity = '.sumo-department';
 var tour = {
     directions: [],
-    hotels: [],
-
     addDirection: function(index, key, value) {
         if (this.directions[index]) {
             this.directions[index][key] = value;
@@ -29,7 +27,19 @@ var tour = {
     hideDirection: function(index) {
         this.directions[index].active = 0;
     }
-
+};
+var orderHotel = {
+    departmentId: '',
+    meal: [],
+    hotels: [],
+    addHotelParam: function(index, key, value) {
+        if (this.hotels[index]) {
+            this.hotels[index][key] = value;
+        } else {
+            this.hotels[index] = {[key]: value};
+        }
+        this.hotels[index].active = 1;
+    },
 };
 
 $(document).ready(function () {
@@ -100,9 +110,18 @@ $(document).ready(function () {
         setSumoSelect($(this), cityName, cityId);
         //получаем номер строки на которой производим действия
         var tourRowNumber = findCurrentRowNumber($(this));
-        //добавляем в объект заказа выбранный город вылета
-        tour.addDirection(tourRowNumber, 'departmentId', cityId);
-        console.log('tour', tour.directions);
+
+        var orderType = findActiveTab();
+        if (orderType == 'tours') {
+            //добавляем в объект заказа выбранный город вылета
+            tour.addDirection(tourRowNumber, 'departmentId', cityId);
+            console.log('tour', tour.directions);
+        }
+        if (orderType == 'hotel') {
+            orderHotel.departmentId = cityId;
+            console.log('hotel', orderHotel);
+        }
+
     });
 
 
@@ -149,12 +168,183 @@ $(document).ready(function () {
 
     $('body').on('click', '[data-hotel-name]', function() {
         var hotelRowNumber = findCurrentRowNumber($(this));
+        //скрываем скринап
         $(this).parents('.formDirections').hide();
-        console.log('rowNumber', hotelRowNumber);
-        console.log('Выбран отель!');
+
+        var hotelResultWrapper = $('['+tourRowAttrSelector+'="'+hotelRowNumber+'"]');
+        hotelResultWrapper.find('.bth__inp-lbl').addClass('active');
+        hotelResultWrapper.find('.hotel-search__cut').text( $(this).attr('data-hotel-name') );
+        hotelResultWrapper.find('.hotel-search__place').text( ', ' + $(this).attr('data-hotel-country') + ', ' + $(this).attr('data-hotel-city'));
+        hotelResultWrapper.find('.hotel-search__rating').text( $(this).attr('data-hotel-rating') );
+        //добавляем данные к заказу
+        orderHotel.addHotelParam(hotelRowNumber, 'hotelName', $(this).attr('data-hotel-name'));
+        orderHotel.addHotelParam(hotelRowNumber, 'hotelCountry', $(this).attr('data-hotel-country'));
+        orderHotel.addHotelParam(hotelRowNumber, 'hotelRating', $(this).attr('data-hotel-rating'));
+
+        console.log('orderHotel', orderHotel);
     });
 
+    //обрабатываем выбор Питания на вкладке Конкретный отель
+    $('body').on('click', '[name="meal[]"]', function() {
+        var currentValue = $(this).val();
+        if (currentValue == 'any') {
+            $('.js-types-search-hotel-blocks [name="meal[]"]').not('[value="any"]').prop("checked", false);
+        } else {
+            $('.js-types-search-hotel-blocks [name="meal[]"][value="any"]').prop("checked", false);
+        }
+        //записываем выбранные значения
+        orderHotel.meal = [];
+        $('.js-types-search-hotel-blocks [name="meal[]"]:checked').each(function(i) {
+            orderHotel.meal.push($(this).val());
+        });
+        //отображаем выбранные значения
+        mealString = orderHotel.meal.join(' ');
+        if (mealString == 'any') {
+            mealString = 'ЛЮБОЕ'
+        }
+        setSumoSelect($(this), mealString);
+    });
+
+    //логика выбора категории отеля
+    $('body').on('click', '[name^="tour_category"]', function() {
+        var currentValue = $(this).val();
+        var attrName = $(this).attr('name');
+        if (currentValue == 'any') {
+            $('.js-types-search-tours-blocks [name="'+attrName+'"]').not('[value="any"]').prop("checked", false);
+        } else {
+            $('.js-types-search-tours-blocks [name="'+attrName+'"][value="any"]').prop("checked", false);
+        }
+    });
+
+    //обрабатываем выбор Питания на вкладке Турпакет
+    $('body').on('click', '[name^="tour_meal"]', function() {
+        var currentValue = $(this).val();
+        var attrName = $(this).attr('name');
+        if (currentValue == 'any') {
+            $('.js-types-search-tours-blocks [name="'+attrName+'"]').not('[value="any"]').prop("checked", false);
+        } else {
+            $('.js-types-search-tours-blocks [name="'+attrName+'"][value="any"]').prop("checked", false);
+        }
+    });
+
+    //обрабатываем выбор Расположения на вкладке Турпакет
+    $('body').on('click', '[name^="tour_place"]', function() {
+       var currentValue = $(this).val();
+       var attrName = $(this).attr('name');
+       if (currentValue == 'any') {
+            $('.js-types-search-tours-blocks [name="'+attrName+'"]').not('[value="any"]').prop("checked", false);
+        } else {
+            $('.js-types-search-tours-blocks [name="'+attrName+'"][value="any"]').prop("checked", false);
+           var rowNumber = findCurrentRowNumber($(this));
+            if (isOtherCategoryPlace(currentValue, rowNumber)) {
+                $('.js-types-search-tours-blocks [name="'+attrName+'"]').not('[value="'+currentValue+'"]').prop("checked", false);
+            }
+        }
+    });
+
+    //обрабатываем сохранение Параметров отеля
+    $('body').on('click', '.submit-hotel-params', function() {
+        var rowNumber = findCurrentRowNumber($(this));
+        var hotelParams = findCheckedTourParams(rowNumber);
+        console.log(hotelParams);
+        setLabelHotelParamsControl(rowNumber);
+        $(this).parents('.formDirections').hide();
+        tour.addDirection(rowNumber, 'params', hotelParams);
+    });
+
+    $('body').on('click', '[data-submit-step]', function() {
+        //определим какая вкладка выбрана
+        //Турпакет или Конкретный отель
+        console.log(tour);
+        console.log(lsfw.bookingRequest);
+    });
+
+
 });
+
+// проверяем текущее место из тех же категорий, что и выбраны ранее
+// currentPlace - текущее значение места
+// rowNumber - номер строки (0, 1 или 2)
+var isOtherCategoryPlace = function(currentPlace, rowNumber) {
+    var currentCategory = findCategoryTourPlaces(currentPlace);
+    var checkedCategories = findCheckedTourPlaces(rowNumber);
+    var resultCompare = false;
+    checkedCategories.forEach(function(item) {
+        categoryIteration = findCategoryTourPlaces(item);
+        if (currentCategory != categoryIteration) {
+            resultCompare = true;
+        }
+    });
+    return resultCompare;
+};
+
+//устанавливаем заголовок у контрола Параметры отеля
+var setLabelHotelParamsControl = function(rowNumber) {
+    var rowWrapper = $('.js-types-search-tours-blocks [data-tour-row="'+rowNumber+'"]');
+    //найдем кол-во параметров
+    var countParams = rowWrapper.find('[name^="tour_"]').length;
+    //найдем кол-во выбранных параметров
+    var countActiveParams = rowWrapper.find('[name^="tour_"]:checked').length;
+    //добавляю в разметку
+    rowWrapper.find('.bth__inp-lbl').addClass('active');
+    rowWrapper.find('.bth__inp-block--hotel-params .bth__inp').text(countActiveParams + ' / ' + countParams + ' параметров');
+};
+
+//собираем все данные по выделенным параметрам Параметра отеля
+//tourRowNumber - номер строки, по которой собираем данные
+var findCheckedTourParams = function(tourRowNumber) {
+    var params = {
+        tour_category: [],
+        tour_rating: [],
+        tour_meal: [],
+        tour_place: [],
+        tour_baby: [],
+        tour_other: []
+    };
+
+    $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_category"]:checked').each(function(i) {
+        params.tour_category.push($(this).val());
+    });
+    $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_rating"]:checked').each(function(i) {
+        params.tour_rating.push($(this).val());
+    });
+    $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_meal"]:checked').each(function(i) {
+        console.log($(this).val());
+        params.tour_meal.push($(this).val());
+    });
+    $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_place"]:checked').each(function(i) {
+        params.tour_place.push($(this).val());
+    });
+    $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_baby"]:checked').each(function(i) {
+        params.tour_baby.push($(this).val());
+    });
+    $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_other"]:checked').each(function(i) {
+        params.tour_other.push($(this).val());
+    });
+
+    return params;
+};
+
+// находим все выделенные маста в Расположении
+// rowNumber - номер строки для поиска
+var findCheckedTourPlaces = function(rowNumber) {
+    var arr = [];
+    $('.js-types-search-tours-blocks [name="tour_place_'+rowNumber+'[]"]:checked').each(function(i) {
+        arr.push($(this).val());
+    });
+    return arr;
+};
+
+// возвращает категорию места
+var findCategoryTourPlaces = function(place) {
+    var category = place.split('_');
+    return category[0];
+};
+
+// Определяем активную вкладку
+var findActiveTab = function() {
+    return $('[name="types"]:checked').val();
+};
 
 // отправляем форму НЕстандартного запроса
 // buttonCustomBooking - объект кнопки сабмита
@@ -428,6 +618,8 @@ getSearchItemHotelTemplate = function(countryName, hotelName, starRating, cityNa
     return tmpl;
 };
 
+// Заполняем контрол данными по отелям
+// query - подстрока для поиска вхождения в названии отелей
 findHotels = function(query) {
     var hotelsWrapper = $('.formDirections__bottom-blocks-cut');
     hotelsWrapper.html('');
