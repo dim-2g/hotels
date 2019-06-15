@@ -22,7 +22,7 @@ class AppBottomAsset extends AssetBundle
     public $js = [
         '/js/jquery-ui.min.js',
         '/js/vendor/magnific-popup.min.js',
-        '/js/vendor/SumoSelectLS/js/jquery.sumoselect-ls.min.js',
+        //'/js/vendor/SumoSelectLS/js/jquery.sumoselect-ls.min.js',
         //'/js/vendor/jquery-datepicker-range.js',
         '/js/tophotels_site_html/tk-form-v2/date-function.js',
         '/js/tophotels_site_html/tk-form-v2/main.js',

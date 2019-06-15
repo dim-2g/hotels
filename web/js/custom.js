@@ -24,10 +24,8 @@ var tour = {
         return false;
     },
 
-    /*
-     * Ставим признак неактивности, когда нажимаем на минус, чтобы не отправлять данные в заявке
-     * но при этом и не удаляем эти данные
-     */
+    // Ставим признак неактивности, когда нажимаем на минус, чтобы не отправлять данные в заявке
+    // но при этом и не удаляем эти данные
     hideDirection: function(index) {
         this.directions[index].active = 0;
     }
@@ -36,6 +34,10 @@ var tour = {
 
 $(document).ready(function () {
 
+    //переопределяем функции поиска выпадающих списков, согласно ТЗ
+    reinitSumoSearch('.sumo-direction');
+    reinitSumoSearch('.sumo-direction-city');
+    reinitSumoSearch('.sumo-department');
     //визуально устанавливаем дефолтные значения
     setSumoSelect($(selectorDirection), 'укажите страну');
     setSumoSelect($(selectorDirectionCity), 'не важно');
@@ -137,12 +139,18 @@ $(document).ready(function () {
         currentTourRow.addClass('tour-selection-wrap-in--hidden');
     });
 
+    $('body').on('keyup', '.formDirections__search input.bth__inp', function() {
+        var searchText = $(this).val();
+        if (searchText.length < 3) {
+            return;
+        }
+        findHotels(searchText);
+    });
+
 });
 
-/*
- * отправляем форму НЕстандартного запроса
- * buttonCustomBooking - объект кнопки сабмита
- */
+// отправляем форму НЕстандартного запроса
+// buttonCustomBooking - объект кнопки сабмита
 submitCustomForm = function(buttonCustomBooking) {
     var fieldSelectors = {
         'parametrs': '#parametrs',
@@ -196,9 +204,7 @@ submitCustomForm = function(buttonCustomBooking) {
     });
 };
 
-/*
- * загружает список стран
- */
+// загружает список стран
 initDirectionSelect = function() {
     $.ajax({
         url: '/dictionary/countries',
@@ -213,9 +219,7 @@ initDirectionSelect = function() {
     });
 };
 
-/*
- * загружает список Городов для вылета
- */
+// загружает список Городов для вылета
 initDepartmentCitySelect = function() {
     $.ajax({
         url: '/dictionary/department',
@@ -230,13 +234,10 @@ initDepartmentCitySelect = function() {
     });
 };
 
-
-/*
- * Устанавливает Название поля, при выборе выпадающего селекта
- * selector - селектор тега select
- * name - видимое название
- * value - значение
- */
+// Устанавливает Название поля, при выборе выпадающего селекта
+// selector - селектор тега select
+// name - видимое название
+// value - значение
 setSumoSelect = function(element, name, value = 0) {
     var wrapperSelect = element.parents('.tour-selection-field');
     var labelSelect = wrapperSelect.find('.bth__inp-lbl');
@@ -247,20 +248,16 @@ setSumoSelect = function(element, name, value = 0) {
     }
 };
 
-/*
- * Добавялет элемент во все выпадающие списки
- * selector - селектор тега select
- * name - видимое название
- * value - значение
- */
+// Добавялет элемент во все выпадающие списки
+// selector - селектор тега select
+// name - видимое название
+// value - значение
 addSumoSelect = function(elementHtml, name, value = 0) {
     elementHtml.sumo.add(value, name);
 };
 
-/*
- * Добавляет во все выпадающие списки информацию по странам
- * jsonCountry - набор данных по странам
- */
+// Добавляет во все выпадающие списки информацию по странам
+// jsonCountry - набор данных по странам
 addCountryInAllSelects = function(jsonCountry) {
     $(selectorDirection).each(function(index, elementSelect) {
         jsonCountry.forEach(function(item) {
@@ -271,10 +268,8 @@ addCountryInAllSelects = function(jsonCountry) {
     });
 };
 
-/*
- * Добавляет во все выпадающие списки информацию по городам вылета
- * jsonCountry - набор данных по странам
- */
+// Добавляет во все выпадающие списки информацию по городам вылета
+// jsonCountry - набор данных по странам
 addDepartmentCityInAllSelects = function(jsonCities) {
     $(selectorDepartmentCity).each(function(index, elementSelect) {
         jsonCities.forEach(function(item) {
@@ -283,11 +278,8 @@ addDepartmentCityInAllSelects = function(jsonCities) {
     });
 };
 
-
-/*
- * загружает список городов для конкретной страны
- * countryId - id страны из словаря
- */
+// загружает список городов для конкретной страны
+// countryId - id страны из словаря
 initDirectionCitySelect = function(countryId, tourRowNumber) {
     $.ajax({
         url: '/dictionary/cities',
@@ -303,9 +295,7 @@ initDirectionCitySelect = function(countryId, tourRowNumber) {
     });
 };
 
-/*
- * Загружаем список городов в нужный селект
- */
+// Загружаем список городов в нужный селект
 addCitiesSelect = function(jsonCities, tourRowNumber) {
     var selectCity = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find(selectorDirectionCity);
     selectCity[0].sumo.removeAll();
@@ -315,32 +305,27 @@ addCitiesSelect = function(jsonCities, tourRowNumber) {
 
 };
 
-/*
- * Выводим сообщение об ошибки заполнения поля
- * устанавливаем текст подсказки
- */
+
+// Выводим сообщение об ошибки заполнения поля
+// устанавливаем текст подсказки
 setFieldError = function(selector, textHint = 'Поле не должно быть пустым') {
     var inputWrapper = $(selector).parents('.bth__inp-block');
     inputWrapper.addClass('has-error');
     inputWrapper.find('.bth__cnt').text(textHint);
 };
 
-/*
- * Фиксируем высоту контейнера формы, чтобы после успешной отправки
- * не прыгала высота
- */
+// Фиксируем высоту контейнера формы, чтобы после успешной отправки
+// не прыгала высота
 setFormWrapperHeight = function() {
     var wrapper = $('.form-panel__wrapper');
     var height = wrapper.outerHeight();
     wrapper.parents('div').css({'min-height': height});
 };
 
-/*
- * устанавливаем изображение флага в селект
- * отодвигаем название лейбла
- * tourRowNumber - номер строки, в которой выбрали страну
- * imageFlag - путь до картинки
- */
+// устанавливаем изображение флага в селект
+// отодвигаем название лейбла
+// tourRowNumber - номер строки, в которой выбрали страну
+// imageFlag - путь до картинки
 setCountryFlag = function(tourRowNumber, imageFlag) {
     if (imageFlag == undefined) {
         return;
@@ -352,10 +337,8 @@ setCountryFlag = function(tourRowNumber, imageFlag) {
     inputWrapper.find('.tour-selection__flag').css({"background-image":"url('"+imageFlag+"')"});
 };
 
-/*
- * сбрасываем изображение флага в селекте
- * tourRowNumber - номер строки, в которой выбрали страну
- */
+// сбрасываем изображение флага в селекте
+// tourRowNumber - номер строки, в которой выбрали страну
 resetCountryFlag = function(tourRowNumber) {
     var inputWrapper = $('['+tourRowAttrSelector+'="'+tourRowNumber+'"]').find('.bth__inp-block--direction');
     inputWrapper.removeClass('bth__inp-block--has-flag');
@@ -370,11 +353,95 @@ setCaptionCitySelect = function(tourRowNumber, caption) {
 };
 
 
-/*
- * Возвращает номер строки, на которой производятся действия, начиная с нуля.
- * element - текущий элемент jQuery взаимодействия пользователя с формой
- */
+// Возвращает номер строки, на которой производятся действия, начиная с нуля.
+// element - текущий элемент jQuery взаимодействия пользователя с формой
 findCurrentRowNumber = function(element) {
     var tourRowNumber = element.parents('['+tourRowAttrSelector+']').attr(tourRowAttrSelector);
     return tourRowNumber;
+};
+
+// Обертка для переопределения функции поиска
+reinitSumoSearch = function(selectorSumo, func = 'reinitSumoSearchFunc') {
+    var sumoSelect = $(selectorSumo);
+    if (sumoSelect.length > 0) {
+        sumoSelect.get(0).sumo.Search = window[func](sumoSelect.get(0).sumo);
+    }
+};
+
+// Переопределяем фуникцию поиска, чтобы реальзовать начало
+// поиска, после ввода 3х символов
+reinitSumoSearchFunc = function(sumoSelect){
+    var O = sumoSelect,
+        cc = O.CaptionCont.addClass('search'),
+        P = $('<p class="no-match">');
+
+    O.ftxt = $('<input type="text" class="search-txt" value="" placeholder="Искать...">')
+        .on('click', function(e){
+            e.stopPropagation();
+        });
+    cc.append(O.ftxt);
+    O.optDiv.children('ul').after(P);
+
+    O.ftxt.on('keyup.sumo',function(){
+        if ($(this).val().length < 3) {
+            return;
+        }
+        var hid = O.optDiv.find('ul.options li.opt').each(function(ix,e){
+            e = $(e);
+            if(e.text().toLowerCase().indexOf(O.ftxt.val().toLowerCase()) > -1)
+                e.removeClass('hidden');
+            else
+                e.addClass('hidden');
+        }).not('.hidden');
+
+        P.html('Нет совпадений для "{0}"'.replace(/\{0\}/g, O.ftxt.val())).toggle(!hid.length);
+
+        O.selAllState();
+    });
+};
+
+
+getSearchItemHotelTemplate = function(countryName, hotelName, starRating, cityName) {
+    var tmpl = `
+        <div class="formDirections__bottom-item" 
+            data-hotel-country="${countryName}"
+            data-hotel-name="${hotelName}"
+            data-hotel-rating="${starRating}"
+            data-hotel-city="${cityName}"
+            >
+            <div class="formDirections__city">
+                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                    <div class="hint">${countryName}</div>
+                </div>
+                <span class="formDirections__cut"> ${hotelName} </span>${starRating}
+            </div>
+            <span class="formDirections__count">${cityName}</span>
+        </div>
+    `;
+    return tmpl;
+};
+
+findHotels = function(query) {
+    var hotelsWrapper = $('.formDirections__bottom-blocks-cut');
+    hotelsWrapper.html('');
+
+    $.ajax({
+        url: '/dictionary/hotels',
+        data: {query: query},
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+
+            response.forEach(function(item) {
+                elementSelect.sumo.add(item.id, item.name);
+            });
+
+            var itemSearch = getSearchItemHotelTemplate('Russia', item.name, '5*', 'Тамбов');
+            hotelsWrapper.append(itemSearch);
+
+        },
+        error: function() {
+            console.log('Error');
+        }
+    });
 };

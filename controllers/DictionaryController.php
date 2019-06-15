@@ -108,19 +108,23 @@ class DictionaryController extends Controller
 
     /*
      * Получаем список отелей
-     * $countryId - id страны
+     * $query - часть поисковой фразы
      */
-    public function actionHotels()
+    public function actionHotels($query)
     {
+        /*
         $hotels = HotelDictionary::find()
-            ->where(['active' => 1, 'trash' => 0])
+            ->with('resort')
+            //->with('country')
+            ->where(['ilike', 'name', $query])
+            ->andWhere(['active' => 1, 'trash' => 0])
             ->asArray()
             ->orderBy(['name' => SORT_ASC])
+            ->limit(10)
             ->all();
-
-        echo '<pre>';
-        print_r($hotels);
-        echo '</pre>';
+        */
+        $hotels = HotelDictionary::findHotels($query);
+        var_dump($hotels);
         die();
         return json_encode($hotels);
     }

@@ -203,6 +203,15 @@ $(document).ready(function () {
     });
     sumoDepartment.parent().addClass('open');
     sumoDepartment.next().next().css('top', '0').css('position', 'relative');
+
+//Город вылета
+    var sumoDepartmentHotel = $('select[class="sumo-department-hotel"]');
+    sumoDepartmentHotel.SumoSelect({
+        search: true,
+        forceCustomRendering: true
+    });
+    sumoDepartmentHotel.parent().addClass('open');
+    sumoDepartmentHotel.next().next().css('top', '0').css('position', 'relative');
 /*
     var formDateHelp1 = new mytour.searchTours.formDate({
         pickerBlockId: 'js-mt-filter-dtHelp1',
