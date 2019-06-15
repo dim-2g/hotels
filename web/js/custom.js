@@ -147,6 +147,13 @@ $(document).ready(function () {
         findHotels(searchText);
     });
 
+    $('body').on('click', '[data-hotel-name]', function() {
+        var hotelRowNumber = findCurrentRowNumber($(this));
+        $(this).parents('.formDirections').hide();
+        console.log('rowNumber', hotelRowNumber);
+        console.log('Выбран отель!');
+    });
+
 });
 
 // отправляем форму НЕстандартного запроса
@@ -401,7 +408,7 @@ reinitSumoSearchFunc = function(sumoSelect){
 };
 
 
-getSearchItemHotelTemplate = function(countryName, hotelName, starRating, cityName) {
+getSearchItemHotelTemplate = function(countryName, hotelName, starRating, cityName, flagImage) {
     var tmpl = `
         <div class="formDirections__bottom-item" 
             data-hotel-country="${countryName}"
@@ -410,10 +417,10 @@ getSearchItemHotelTemplate = function(countryName, hotelName, starRating, cityNa
             data-hotel-city="${cityName}"
             >
             <div class="formDirections__city">
-                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1">
+                <div class=" lsfw-flag lsfw-flag--30w lsfw-flag-1" style="background-image: url('${flagImage}')">
                     <div class="hint">${countryName}</div>
                 </div>
-                <span class="formDirections__cut"> ${hotelName} </span>${starRating}
+                <span class="formDirections__cut"> ${hotelName} </span> ${starRating}
             </div>
             <span class="formDirections__count">${cityName}</span>
         </div>
@@ -431,14 +438,15 @@ findHotels = function(query) {
         type: 'GET',
         dataType: 'json',
         success: function(response) {
-
             response.forEach(function(item) {
-                elementSelect.sumo.add(item.id, item.name);
+                var itemSearch = getSearchItemHotelTemplate(
+                    item.country_name,
+                    item.name,
+                    item.hotel_category,
+                    item.resort_name,
+                    item.flag_image);
+                hotelsWrapper.append(itemSearch);
             });
-
-            var itemSearch = getSearchItemHotelTemplate('Russia', item.name, '5*', 'Тамбов');
-            hotelsWrapper.append(itemSearch);
-
         },
         error: function() {
             console.log('Error');

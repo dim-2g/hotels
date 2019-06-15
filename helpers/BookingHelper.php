@@ -51,10 +51,15 @@ class BookingHelper{
             ->send();
     }
 
-    public static function prepareCountryFlags($countries)
+    /*
+     * Добавляем каждой стране поле со строкой до изображения флага
+     * $countries - массив с данными по странам
+     * $fieldNameEng - название поля с латинским написанием страны
+     */
+    public static function prepareCountryFlags($countries, $fieldNameEng = 'name_eng')
     {
         foreach ($countries as &$country) {
-            $flagFileName = static::findCountryFlagName($country['name_eng']);
+            $flagFileName = static::findCountryFlagName($country[$fieldNameEng]);
             $fullFlagFileName = $_SERVER['DOCUMENT_ROOT']  . static::$flagsDirectory . $flagFileName;
             if (is_readable($fullFlagFileName)) {
                 $country['flag_image'] = static::$flagsDirectory . $flagFileName;
@@ -63,6 +68,10 @@ class BookingHelper{
         return $countries;
     }
 
+    /*
+     * Преобразуем англ. название страны к названию изображения флага
+     * $countryName - название страны на англ.языке
+     */
     private static function findCountryFlagName($countryName) {
         $flagFileName = trim(strtolower($countryName));
         $flagFileName = str_replace('  ', ' ', $flagFileName);

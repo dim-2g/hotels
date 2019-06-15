@@ -112,20 +112,8 @@ class DictionaryController extends Controller
      */
     public function actionHotels($query)
     {
-        /*
-        $hotels = HotelDictionary::find()
-            ->with('resort')
-            //->with('country')
-            ->where(['ilike', 'name', $query])
-            ->andWhere(['active' => 1, 'trash' => 0])
-            ->asArray()
-            ->orderBy(['name' => SORT_ASC])
-            ->limit(10)
-            ->all();
-        */
         $hotels = HotelDictionary::findHotels($query);
-        var_dump($hotels);
-        die();
+        $hotels = BookingHelper::prepareCountryFlags($hotels, 'country_name_eng');
         return json_encode($hotels);
     }
 

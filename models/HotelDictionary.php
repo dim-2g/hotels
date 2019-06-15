@@ -28,7 +28,7 @@ class HotelDictionary extends AppDictionary
             SELECT 
                 da.id, da.name, da.resort, 
                 dr.country, dr.name as resort_name,
-                dc.name as country_name,
+                dc.name as country_name, dc.name_eng as country_name_eng,
                 dac.name as hotel_category
             FROM 
                 dict.dict_allocation da
