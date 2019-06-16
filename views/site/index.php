@@ -884,7 +884,7 @@ $this->title = 'TopHotels';
                         </div>
                     </div>
                 </div>
-                
+
             </div>
 
             <div class="tour-selection-wrap-in ">
