@@ -224,8 +224,8 @@ AppBottomAsset::register($this);
                         <li class="header-nav-item">
                             <a href="/tophotels/forum" class="header-nav-link grey link-disabled">Клуб ТопХотелс</a>
                         </li>
-                        <li class="header-nav-item">
-                            <a href="/tophotels/help-selection" class="header-nav-link grey link-disabled">Помощь в подборе</a>
+                        <li class="header-nav-item active">
+                            <a href="/tophotels/help-selection" class="header-nav-link link-disabled">Помощь в подборе</a>
                         </li>
 
                         <li class="header-nav-item">

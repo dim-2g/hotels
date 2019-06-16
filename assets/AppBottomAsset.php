@@ -43,6 +43,7 @@ class AppBottomAsset extends AssetBundle
         //'/js/libs/reverseLocale.js',
         '/js/libs/LSPager.js',
         '/js/libs/LSSuggest.js',
+        '/js/json2.js',
         '/js/custom.js',
     ];
     public $jsOptions = [

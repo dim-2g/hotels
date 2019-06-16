@@ -28,6 +28,7 @@ var tour = {
         this.directions[index].active = 0;
     }
 };
+
 var orderHotel = {
     departmentId: '',
     meal: [],
@@ -177,11 +178,10 @@ $(document).ready(function () {
         hotelResultWrapper.find('.hotel-search__place').text( ', ' + $(this).attr('data-hotel-country') + ', ' + $(this).attr('data-hotel-city'));
         hotelResultWrapper.find('.hotel-search__rating').text( $(this).attr('data-hotel-rating') );
         //добавляем данные к заказу
-        orderHotel.addHotelParam(hotelRowNumber, 'hotelName', $(this).attr('data-hotel-name'));
-        orderHotel.addHotelParam(hotelRowNumber, 'hotelCountry', $(this).attr('data-hotel-country'));
-        orderHotel.addHotelParam(hotelRowNumber, 'hotelRating', $(this).attr('data-hotel-rating'));
-
-        console.log('orderHotel', orderHotel);
+        orderHotel.addHotelParam(hotelRowNumber, 'hotelId', $(this).attr('data-hotel-id'));
+        //orderHotel.addHotelParam(hotelRowNumber, 'hotelName', $(this).attr('data-hotel-name'));
+        //orderHotel.addHotelParam(hotelRowNumber, 'hotelCountry', $(this).attr('data-hotel-country'));
+        //orderHotel.addHotelParam(hotelRowNumber, 'hotelRating', $(this).attr('data-hotel-rating'));
     });
 
     //обрабатываем выбор Питания на вкладке Конкретный отель
@@ -253,14 +253,60 @@ $(document).ready(function () {
     });
 
     $('body').on('click', '[data-submit-step]', function() {
+        var step = parseInt($(this).attr('data-submit-step'));
         //определим какая вкладка выбрана
         //Турпакет или Конкретный отель
-        console.log(tour);
-        console.log(lsfw.bookingRequest);
+
+        var orderData = {
+            params: {},
+            general: {},
+            tour: {},
+            hotels: {}
+        };
+        orderData.params.step = step;
+        orderData.params.order_type = findActiveTab();
+        orderData.general = lsfw.bookingRequest;
+        orderData.tour.items = tour.directions;
+
+        orderData.hotels.departmentId = orderHotel.departmentId;
+        orderData.hotels.meal = orderHotel.meal;
+        orderData.hotels.items = orderHotel.hotels;
+
+        if (step == 1) {
+            var result = storeOrder(orderData);
+        }
+
+        if (step == 2) {
+            console.log('Сабмит на втором шаге');
+        }
+
     });
 
 
 });
+
+// Записываем данные из Сложной формына первом шаге
+var storeOrder = function(orderData) {
+    console.log(orderData);
+    //var orderDataJSON = JSON.stringify(lsfw.bookingRequest);
+    //var orderDataJSON = JSON.stringify(x);
+    //var orderDataJSON = {"x": 12, "y": [{"k": 2}, {"l": 89}]};
+    $.ajax({
+        url: '/booking/store',
+        data: orderData,
+        type: 'POST',
+        dataType: 'json',
+        success: function(response) {
+            console.log(response);
+        },
+        error: function() {
+            console.log('Error');
+
+        }
+    });
+
+    return 123;
+};
 
 // проверяем текущее место из тех же категорий, что и выбраны ранее
 // currentPlace - текущее значение места
@@ -598,9 +644,10 @@ reinitSumoSearchFunc = function(sumoSelect){
 };
 
 
-getSearchItemHotelTemplate = function(countryName, hotelName, starRating, cityName, flagImage) {
+getSearchItemHotelTemplate = function(hotelId, countryName, hotelName, starRating, cityName, flagImage) {
     var tmpl = `
-        <div class="formDirections__bottom-item" 
+        <div class="formDirections__bottom-item"
+            data-hotel-id="${hotelId}" 
             data-hotel-country="${countryName}"
             data-hotel-name="${hotelName}"
             data-hotel-rating="${starRating}"
@@ -632,6 +679,7 @@ findHotels = function(query) {
         success: function(response) {
             response.forEach(function(item) {
                 var itemSearch = getSearchItemHotelTemplate(
+                    item.id,
                     item.country_name,
                     item.name,
                     item.hotel_category,

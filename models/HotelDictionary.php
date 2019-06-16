@@ -7,6 +7,7 @@ use yii\base\Model;
 use yii\db\ActiveRecord;
 use app\models\AppDictionary;
 use app\models\ResortDictionary;
+use app\models\AlloccatDictionary;
 use PDO;
 
 class HotelDictionary extends AppDictionary
@@ -20,6 +21,11 @@ class HotelDictionary extends AppDictionary
     public function getResort()
     {
         return $this->hasOne(ResortDictionary::className(), ['id' => 'resort']);
+    }
+
+    public function getCategory()
+    {
+        return $this->hasOne(AlloccatDictionary::className(), ['id' => 'cat']);
     }
 
     public static function findHotels($query)

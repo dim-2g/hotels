@@ -23,10 +23,14 @@ class Booking extends ActiveRecord
     public function rules()
     {
         return [
-            ['parametrs', 'required', 'message' => 'Поле "Укажите страну, курорт или отель" обязательное для заполнения'],
+            ['parametrs', 'trim', 'message' => 'Поле "Укажите страну, курорт или отель" обязательное для заполнения'],
             ['name', 'required', 'message' => 'Поле "Ваше имя" обязательное для заполнения'],
             ['phone', 'required', 'message' => 'Поле "Телефон" обязательное для заполнения'],
             ['email', 'email', 'message' => 'Поле не соответствует формату "ххххх@xxxx.xxxx"'],
+            ['wish', 'trim'],
+            ['date_departure', 'trim'],
+            ['persons', 'trim'],
+            ['budget', 'trim'],
         ];
     }
 

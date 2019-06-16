@@ -777,7 +777,6 @@ $this->title = 'TopHotels';
 
             </div>
 
-
             <div class="tour-selection-wrap-in">
                 <div class="bth__ta-resizable-wrap">
                     <div class="bth__ta-resizable" contenteditable=""></div>
@@ -799,6 +798,116 @@ $this->title = 'TopHotels';
 
             </div>
         </div>
+
+        <? /* Второй шаг*/ ?>
+
+        <div class="tour-selection-wrap">
+
+            <div class="tour-selection-wrap-in mt0 tour-selection-wrap-flex">
+
+                <div class="tour-selection-field tour-selection-field--270">
+                    <div class="js-add-error bth__inp-block  ">
+                        <input type="text" value="Саша" class="bth__inp js-label" id="name3">
+                        <label for="name3" class="bth__inp-lbl">Ваше имя</label>
+                        <div class="hint-block hint-block--abs">
+                            <i class="fa fa-question-circle question-error" aria-hidden="true"></i>
+                            <div class="hint">
+                                <p class="bth__cnt">Поле не должно быть пустым</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-selection-field tour-selection-field--270">
+
+                    <div class="js-add-error bth__inp-block ">
+                        <input value="+79532453351" type="text" class="bth__inp js-label" id="phone3"
+                               placeholder="">
+                        <label for="phone3" class="bth__inp-lbl">Телефон</label>
+                        <div class="hint-block hint-block--abs">
+                            <i class="fa fa-question-circle question-error" aria-hidden="true"></i>
+                            <div class="hint">
+                                <p class="bth__cnt">Поле не должно быть пустым</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tour-selection-field tour-selection-field--270">
+
+                    <div class="bth__inp-block  ">
+                        <input type="text" value="smerekovska1976@gmail.com" class="bth__inp js-label " id="mail2">
+                        <label for="mail2" class="bth__inp-lbl">Email (не обязательно)</label>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="bth__cnt uppercase mt20 ">Уточните удобные координаты для выбора турагенства</div>
+            <div class="tour-selection-wrap-in   tour-selection-wrap-flex ">
+                <div class="tour-selection-field tour-selection-field--270 ">
+                    <div class="bth__inp-block js-show-formDirections js-add-error">
+                        <span class="bth__inp-lbl active">Ваш город</span>
+                        <span class="bth__inp">
+                                <b class="uppercase">Санкт-Петербург</b>
+                            </span>
+                        <div class="hint-block hint-block--abs">
+                            <i class="fa fa-question-circle question-error" aria-hidden="true"></i>
+                            <div class="hint">
+                                <p class="bth__cnt">Поле не должно быть пустым</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="formDirections w100p">
+                        <div class="formDirections__wrap w100p">
+
+                            <div class="formDirections__top  formDirections__top-line">
+
+                                <i class="formDirections__bottom-close"></i>
+                                <div class="formDirections__top-tab super-grey ">Города</div>
+                            </div>
+
+                            <div class="SumoSelect formDirections__SumoSelect formDirections__SumoSelect-search">
+                                <select id="sumo-list-city">
+                                    <option>Москва</option>
+                                    <option>Санкт-Петербург</option>
+                                    <option>Москва</option>
+                                    <option>Санкт-Петербург</option>
+                                    <option>Москва</option>
+                                    <option>Санкт-Петербург</option>
+                                    <option>Москва</option>
+                                    <option>Санкт-Петербург</option>
+
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <div class="tour-selection-wrap-in ">
+                <a href="#metro-valid-pp" class="metro-valid-pp bth__btn  bth__btn--fill bth__loader">
+                    Отправить запрос*
+                    <div class=" bth__loader-spin">
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                    </div>
+                </a>
+                <div class="tour-selection-wrap__abs-txt  bth__cnt bth__cnt--sm">
+                    *Нажимая на кнопку "отправить", я принимаю
+                    <a href="#p-agreement-pp" class="p-agreement-pp agree">
+                        Соглашение об обработке личных данных</a> и
+                    <a href="#p-agreement-pp" class="p-agreement-pp site-role">Правила сайта</a>
+                </div>
+
+            </div>
+        </div>
+
+        <? /* Второй шаг. Конец */ ?>
+
         <?php ActiveForm::end() ?>
     </div>
 

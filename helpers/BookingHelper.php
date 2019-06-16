@@ -2,12 +2,20 @@
 
 namespace app\helpers;
 
+
 use Yii;
 use yii\helpers\Url;
+use app\models\CountryDictionary;
+use app\models\CityDictionary;
+use app\models\HotelDictionary;
+use app\models\AlloccatDictionary;
+use app\models\AllocPlaceTypeDictionary;
+use app\models\AllocPlaceValueDictionary;
 
 class BookingHelper{
 
     public static $flagsDirectory = '/images/flags/';
+
     /*
      * Проводит трансформацию массива ошибок для ajax ответа
      */
@@ -24,31 +32,6 @@ class BookingHelper{
         }
 
         return $output;
-    }
-
-    public static function sendMail($bookingRecord, $emailTo)
-    {
-        $message = [];
-        $message[] = "Поступила заявка № {$bookingRecord->id}";
-        $message[] = "Страна, курорт, отель: {$bookingRecord->parametrs}";
-        $message[] = "Имя: {$bookingRecord->name}";
-        $message[] = "Телефон: {$bookingRecord->phone}";
-        $message[] = "Email {$bookingRecord->email}";
-
-        return Yii::$app->mailer->compose('views/booking', [
-                'orderNumber' => $bookingRecord->id,
-                'orderName' => $bookingRecord->name,
-                'orderPhone' => $bookingRecord->phone,
-                'orderParametrs' => $bookingRecord->parametrs,
-                'briefLink' => Url::to(['admin/booking/view', 'id' => $bookingRecord->id], true),
-                'briefList' => Url::to(['admin/booking'], true),
-                'emailTo' => $emailTo,
-                'supportLink' => 'https://tophotels.ru/feedback',
-            ])
-            ->setFrom('hotels@modxguru.ru')
-            ->setTo($emailTo)
-            ->setSubject('Добавлена новая заявка')
-            ->send();
     }
 
     /*
@@ -72,11 +55,13 @@ class BookingHelper{
      * Преобразуем англ. название страны к названию изображения флага
      * $countryName - название страны на англ.языке
      */
-    private static function findCountryFlagName($countryName) {
+    private static function findCountryFlagName($countryName)
+    {
         $flagFileName = trim(strtolower($countryName));
         $flagFileName = str_replace('  ', ' ', $flagFileName);
         $flagFileName = str_replace(' ', '_', $flagFileName);
         $flagFileName .= '.jpg';
         return $flagFileName;
     }
+
 }
