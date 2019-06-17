@@ -49,6 +49,11 @@ var orderHotel = {
         }
         this.hotels[index].active = 1;
     },
+    // Ставим признак неактивности, когда нажимаем на минус, чтобы не отправлять данные в заявке
+    // но при этом и не удаляем эти данные
+    hideHotel: function(index) {
+        this.hotels[index].active = 0;
+    }
 };
 
 $(document).ready(function () {
@@ -170,6 +175,7 @@ $(document).ready(function () {
     $('.js-del-hotel').on('click', function () {
         var currentTourRow = $(this).parents('['+tourRowAttrSelector+']');
         currentTourRow.addClass('tour-selection-wrap-in--hidden');
+        orderHotel.hideDirection(tourRowNumber);
     });
 
     $('body').on('keyup', '.formDirections__search input.bth__inp', function() {
