@@ -175,8 +175,6 @@ $(document).ready(function () {
 
     });
 
-
-
     // Большие контролы
 
     var windowWidth = Math.max($(window).width(), window.innerWidth);

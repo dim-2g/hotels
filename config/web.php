@@ -69,6 +69,7 @@ $config = [
             'rules' => [
             ],
         ],
+        /*
         'assetManager' => [
             'bundles' => [
                 'yii\web\JqueryAsset' => [
@@ -82,6 +83,7 @@ $config = [
                 ],
             ],
         ],
+        */
     ],
     'params' => $params,
 ];

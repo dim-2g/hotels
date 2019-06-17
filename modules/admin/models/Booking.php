@@ -30,7 +30,16 @@ class Booking extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'email', 'phone', 'parametrs', 'created_at'], 'string'],
+            [  ['name',
+                'email',
+                'phone',
+                'parametrs',
+                'created_at',
+                'wish',
+                'date_departure',
+                'persons',
+                'budget',
+                'tourist_city'], 'string'],
         ];
     }
 
@@ -46,6 +55,11 @@ class Booking extends \yii\db\ActiveRecord
             'phone' => 'Телефон',
             'parametrs' => 'Страна/Курорт/Отель',
             'created_at' => 'Дата создания',
+            'wish' => 'Пожелания клиента',
+            'date_departure' => 'Дата вылета',
+            'persons' => 'Гости',
+            'budget' => 'Бюджет',
+            'tourist_city' => 'Город туриста',
         ];
     }
 }

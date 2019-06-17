@@ -117,4 +117,21 @@ class DictionaryController extends Controller
         return json_encode($hotels);
     }
 
+    /*
+     * Получаем список отелей
+     * $query - часть поисковой фразы
+     */
+    public function actionCityTourist($query)
+    {
+        $cities = CityDictionary::find()
+            ->where(['ilike', 'name', $query])
+            ->andWhere(['active' => 1, 'trash' => 0])
+            ->orderBy(['name' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        return json_encode($cities);
+    }
+
+
 }

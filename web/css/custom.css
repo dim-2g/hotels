@@ -35,3 +35,7 @@
     font-weight: bold;
     font-size: 16px;
 }
+
+.order-form__step-2{
+  display: none;
+}

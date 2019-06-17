@@ -2,6 +2,14 @@ var selectorDirection = '.sumo-direction';
 var selectorDirectionCity = '.sumo-direction-city';
 var tourRowAttrSelector = 'data-tour-row';
 var selectorDepartmentCity = '.sumo-department';
+var selectorTouristCity = '#sumo-list-city';
+var fieldSelectorsComplexForm = {
+    'order_id': '.order-form__step-2 [name="order_id"]',
+    'tourist_city': '.order-form__step-2 [name="tourist_city"]',
+    'name': '.order-form__step-2 #name3',
+    'phone': '.order-form__step-2 #phone3',
+    'email': '.order-form__step-2 #mail2'
+};
 var tour = {
     directions: [],
     addDirection: function(index, key, value) {
@@ -49,6 +57,7 @@ $(document).ready(function () {
     reinitSumoSearch('.sumo-direction');
     reinitSumoSearch('.sumo-direction-city');
     reinitSumoSearch('.sumo-department');
+    reinitSumoSearch('#sumo-list-city', 'reinitSumoSearchFuncTouristCity');
     //визуально устанавливаем дефолтные значения
     setSumoSelect($(selectorDirection), 'укажите страну');
     setSumoSelect($(selectorDirectionCity), 'не важно');
@@ -87,7 +96,6 @@ $(document).ready(function () {
         setCaptionCitySelect(tourRowNumber, countryName);
         //добавляем в объект заказа выбранную страну
         tour.addDirection(tourRowNumber, 'countryId', countryId);
-        console.log('tour', tour.directions);
     });
 
     //при клике на конкретном городе
@@ -100,7 +108,15 @@ $(document).ready(function () {
         var tourRowNumber = findCurrentRowNumber($(this));
         //добавляем в объект заказа выбранный город
         tour.addDirection(tourRowNumber, 'cityId', cityId);
-        console.log('tour', tour.directions);
+    });
+
+    //при клике на городе туриста
+    $('body').on('change', selectorTouristCity, function() {
+        var cityId = $(this).val();
+        var cityName = $(this).find('option:selected').text().trim();
+        //визуально показываем какой город выбран
+        setSumoSelect($(this), cityName, cityId);
+        $(fieldSelectorsComplexForm.tourist_city).val(cityId);
     });
 
     //при клике на городе вылета
@@ -116,13 +132,10 @@ $(document).ready(function () {
         if (orderType == 'tours') {
             //добавляем в объект заказа выбранный город вылета
             tour.addDirection(tourRowNumber, 'departmentId', cityId);
-            console.log('tour', tour.directions);
         }
         if (orderType == 'hotel') {
             orderHotel.departmentId = cityId;
-            console.log('hotel', orderHotel);
         }
-
     });
 
 
@@ -179,9 +192,6 @@ $(document).ready(function () {
         hotelResultWrapper.find('.hotel-search__rating').text( $(this).attr('data-hotel-rating') );
         //добавляем данные к заказу
         orderHotel.addHotelParam(hotelRowNumber, 'hotelId', $(this).attr('data-hotel-id'));
-        //orderHotel.addHotelParam(hotelRowNumber, 'hotelName', $(this).attr('data-hotel-name'));
-        //orderHotel.addHotelParam(hotelRowNumber, 'hotelCountry', $(this).attr('data-hotel-country'));
-        //orderHotel.addHotelParam(hotelRowNumber, 'hotelRating', $(this).attr('data-hotel-rating'));
     });
 
     //обрабатываем выбор Питания на вкладке Конкретный отель
@@ -229,13 +239,13 @@ $(document).ready(function () {
 
     //обрабатываем выбор Расположения на вкладке Турпакет
     $('body').on('click', '[name^="tour_place"]', function() {
-       var currentValue = $(this).val();
-       var attrName = $(this).attr('name');
-       if (currentValue == 'any') {
+        var currentValue = $(this).val();
+        var attrName = $(this).attr('name');
+        if (currentValue == 'any') {
             $('.js-types-search-tours-blocks [name="'+attrName+'"]').not('[value="any"]').prop("checked", false);
         } else {
             $('.js-types-search-tours-blocks [name="'+attrName+'"][value="any"]').prop("checked", false);
-           var rowNumber = findCurrentRowNumber($(this));
+            var rowNumber = findCurrentRowNumber($(this));
             if (isOtherCategoryPlace(currentValue, rowNumber)) {
                 $('.js-types-search-tours-blocks [name="'+attrName+'"]').not('[value="'+currentValue+'"]').prop("checked", false);
             }
@@ -252,11 +262,9 @@ $(document).ready(function () {
         tour.addDirection(rowNumber, 'params', hotelParams);
     });
 
-    $('body').on('click', '[data-submit-step]', function() {
+    //сабмит первого шанга
+    $('body').on('click', '[data-submit-step="1"]', function() {
         var step = parseInt($(this).attr('data-submit-step'));
-        //определим какая вкладка выбрана
-        //Турпакет или Конкретный отель
-
         var orderData = {
             params: {},
             general: {},
@@ -264,6 +272,7 @@ $(document).ready(function () {
             hotels: {}
         };
         orderData.params.step = step;
+        orderData.params.wish = $('.order-wish').text();
         orderData.params.order_type = findActiveTab();
         orderData.general = lsfw.bookingRequest;
         orderData.tour.items = tour.directions;
@@ -271,41 +280,98 @@ $(document).ready(function () {
         orderData.hotels.departmentId = orderHotel.departmentId;
         orderData.hotels.meal = orderHotel.meal;
         orderData.hotels.items = orderHotel.hotels;
-
-        if (step == 1) {
-            var result = storeOrder(orderData);
-        }
-
-        if (step == 2) {
-            console.log('Сабмит на втором шаге');
-        }
-
+        storeOrder(orderData);
     });
 
+    //сабмит второго шанга
+    $('body').on('click', '[data-submit-step="2"]', function(e) {
+        e.preventDefault();
+        var data = {};
+        data.order_id = $(fieldSelectorsComplexForm.order_id).val();
+        data.tourist_city = $(fieldSelectorsComplexForm.tourist_city).val();
+        data.name = $(fieldSelectorsComplexForm.name).val();
+        data.phone = $(fieldSelectorsComplexForm.phone).val();
+        data.email = $(fieldSelectorsComplexForm.email).val();
+        storeOrderStep2(data);
+    });
+
+    //Принудительно корректируем ширину активного таба
+    setTimeout(function() {
+        correctWidthUnderline();
+    }, 500);
 
 });
 
+
+// Принудительно корректируем ширину активного таба, если хеш
+// отличается от id текущего таба.
+var correctWidthUnderline = function() {
+    var activeTab = $('.tour-selection-box .tabs-bar .tab.active');
+    var underline = $('.tour-selection-box .tabs-bar .line');
+    if (activeTab.length > 0) {
+        activeTabWidth = activeTab.width();
+        underline.css({"width": activeTabWidth});
+    }
+};
+
+
+//Добавляем заказ данными со второго шага
+var storeOrderStep2 = function(data) {
+    var buttonCustomBooking = $('[data-submit-step="2"]');
+    $('#step1Panel').find('.has-error').removeClass('has-error');
+
+    var timeoutAnimation = setTimeout(function(){
+        buttonCustomBooking.addClass('bth__loader--animate');
+    }, 500);
+
+    $.ajax({
+        url: '/booking/store-add',
+        data: data,
+        type: 'POST',
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                setFormWrapperHeight('#step1Panel .form-panel__wrapper');
+                $('#step1Panel .form-panel__wrapper').hide();
+                $('#step1Panel .form-panel__success').fadeIn(500);
+            } else {
+                clearTimeout(timeoutAnimation);
+                response.errors.forEach(function(item) {
+                    setFieldError(fieldSelectorsComplexForm[item.key], item.text);
+                });
+            }
+            buttonCustomBooking.removeClass('bth__loader--animate');
+        },
+        error: function() {
+            console.log('Error in method storeOrderStep2');
+            buttonCustomBooking.removeClass('bth__loader--animate');
+        }
+    });
+};
+
 // Записываем данные из Сложной формына первом шаге
 var storeOrder = function(orderData) {
-    console.log(orderData);
-    //var orderDataJSON = JSON.stringify(lsfw.bookingRequest);
-    //var orderDataJSON = JSON.stringify(x);
-    //var orderDataJSON = {"x": 12, "y": [{"k": 2}, {"l": 89}]};
     $.ajax({
         url: '/booking/store',
         data: orderData,
         type: 'POST',
         dataType: 'json',
         success: function(response) {
-            console.log(response);
+            if (response.success) {
+                if (response.data.id > 0) {
+                    $('[name="order_id"]').val(response.data.id);
+                    $('.order-form__step-1').hide();
+                    $('.order-form__step-2').fadeIn();
+                } else {
+                    console.log('Error in method storeOrder');
+                }
+            }
         },
         error: function() {
             console.log('Error');
 
         }
     });
-
-    return 123;
 };
 
 // проверяем текущее место из тех же категорий, что и выбраны ранее
@@ -559,8 +625,8 @@ setFieldError = function(selector, textHint = 'Поле не должно быт
 
 // Фиксируем высоту контейнера формы, чтобы после успешной отправки
 // не прыгала высота
-setFormWrapperHeight = function() {
-    var wrapper = $('.form-panel__wrapper');
+setFormWrapperHeight = function(selector = '.form-panel__wrapper') {
+    var wrapper = $(selector);
     var height = wrapper.outerHeight();
     wrapper.parents('div').css({'min-height': height});
 };
@@ -643,6 +709,58 @@ reinitSumoSearchFunc = function(sumoSelect){
     });
 };
 
+// Переопределяем фуникцию поиска, для Выбора города туриста
+// поиска, после ввода 3х символов
+reinitSumoSearchFuncTouristCity = function(sumoSelect){
+    var O = sumoSelect,
+        cc = O.CaptionCont.addClass('search'),
+        P = $('<p class="no-match">');
+
+    O.ftxt = $('<input type="text" class="search-txt" value="" placeholder="Искать...">')
+        .on('click', function(e){
+            e.stopPropagation();
+        });
+    cc.append(O.ftxt);
+    O.optDiv.children('ul').after(P);
+
+    O.ftxt.on('keyup.sumo',function(){
+        if ($(this).val().length < 3) {
+            return;
+        }
+        findTouristCities($(this).val());
+
+        var hid = O.optDiv.find('ul.options li.opt').each(function(ix,e){
+            e = $(e);
+            if(e.text().toLowerCase().indexOf(O.ftxt.val().toLowerCase()) > -1)
+                e.removeClass('hidden');
+            else
+                e.addClass('hidden');
+        }).not('.hidden');
+
+        P.html('Нет совпадений для "{0}"'.replace(/\{0\}/g, O.ftxt.val())).toggle(!hid.length);
+
+        O.selAllState();
+    });
+};
+
+var findTouristCities = function(query) {
+    var elementSelect = $(selectorTouristCity).get(0);
+    elementSelect.sumo.removeAll();
+    $.ajax({
+        url: '/dictionary/city-tourist',
+        data: {query: query},
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            response.forEach(function(item) {
+                elementSelect.sumo.add(item.id, item.name);
+            });
+        },
+        error: function() {
+            console.log('Error');
+        }
+    });
+};
 
 getSearchItemHotelTemplate = function(hotelId, countryName, hotelName, starRating, cityName, flagImage) {
     var tmpl = `

@@ -94,6 +94,7 @@ class BookingController extends Controller
         $orderData = [];
         $orderData['name'] = 'не указано';
         $orderData['phone'] = 'не указано';
+        $orderData['tourist_city'] = 'не указано';
         $orderData['date_departure'] = self::prepareDateDeparture($post);
         $orderData['persons'] = self::preparePersons($post);
         $orderData['budget'] = self::prepareBudget($post);
@@ -113,6 +114,36 @@ class BookingController extends Controller
         }
         return json_encode($response);
     }
+
+    public function actionStoreAdd()
+    {
+        $response = [
+            'success' => false,
+            'errors' => [],
+            'data' => [],
+        ];
+        $post = Yii::$app->request->post();
+        if (!empty($post['tourist_city'])) {
+            $post['tourist_city'] = self::findCityNameById($post['tourist_city']);
+        } else {
+            $post['tourist_city'] = '';
+        }
+        $booking = Booking::findOne($post['order_id']);
+        $booking->tourist_city = $post['tourist_city'];
+        $booking->name = $post['name'];
+        $booking->phone = $post['phone'];
+        $booking->email = $post['email'];
+        if ($booking->validate()) {
+            $booking->save();
+            //BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
+            $response['success'] = true;
+        } else {
+            $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
+        }
+
+        return json_encode($response);
+    }
+
 
     public static function sendMail($bookingRecord, $emailTo)
     {
@@ -291,6 +322,12 @@ class BookingController extends Controller
     public static function prepareWish($postData)
     {
         $output = [];
+        //сначала добавим данные заполненные клиентом в поле Дополнительные пожелания
+        if (!empty($postData['params']['wish'])) {
+            $output[] = $postData['params']['wish'];
+        }
+
+        $output[] = 'Данные по Турпакетам';
         //если присутствуют данные по турпакетам
         if ($postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
             $output[] = 'Данные по Турпакетам';
@@ -344,28 +381,35 @@ class BookingController extends Controller
                     $outputRow[] = 'Питание ' . implode(',', $tmp);
                 }
 
-                //Получаем Расположение
+                //Получаем Расположение. Разбираем передаваемые данные
+                // Либо это в формате 3_2, где 3 - id категории, 2 - id удаленности
+                // Либо там any - кога выбран любой тип.
                 if (!empty($item['params']['tour_place'])) {
                     $tmp = [];
                     foreach ($item['params']['tour_place'] as $tourPlace) {
                         if ($tourPlace == 'any') {
                             $tourPlace = 'Любой тип';
+                            $placeCategoryName = 'Любой тип';
                         } else {
                             list($tourPlaceCategory, $tourPlaceId) = explode('_' , $tourPlace);
+                            $placeCategory = AllocPlaceTypeDictionary::find()
+                                ->select('name')
+                                ->where(['id' => $tourPlaceCategory])
+                                ->asArray()
+                                ->one();
+                            $placeCategoryName = $placeCategory['name'];
                         }
-                        $tourPlace = AllocPlaceValueDictionary::find()
-                            ->select('name')
-                            ->where(['id' => $tourPlaceId, 'place' => $tourPlaceCategory])
-                            ->asArray()
-                            ->one();
-                        $tmp[] = $tourPlace['name'];
+                        if (!empty($tourPlaceId)) {
+                            $tourPlace = AllocPlaceValueDictionary::find()
+                                ->select('name')
+                                ->where(['id' => $tourPlaceId, 'place' => $tourPlaceCategory])
+                                ->asArray()
+                                ->one();
+                            $tmp[] = $tourPlace['name'];
+                        }
                     }
-                    $placeCategory = AllocPlaceTypeDictionary::find()
-                        ->select('name')
-                        ->where(['id' => $tourPlaceCategory])
-                        ->asArray()
-                        ->one();
-                    $outputRow[] = 'Расположение ' . $placeCategory['name'] . ' ' . implode(',', $tmp);
+
+                    $outputRow[] = 'Расположение ' . $placeCategoryName . ' ' . implode(',', $tmp);
                 }
 
                 //Параметры для детей
