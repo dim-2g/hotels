@@ -8,6 +8,7 @@ use app\models\AllocPlaceValueDictionary;
 use app\models\CityDictionary;
 use app\models\CountryDictionary;
 use app\models\HotelDictionary;
+use app\modules\admin\models\Condition;
 use Yii;
 use yii\web\Controller;
 use app\models\Booking;
@@ -100,6 +101,9 @@ class BookingController extends Controller
         $orderData['budget'] = self::prepareBudget($post);
         $orderData['parametrs'] = self::prepareDirection($post);
         $orderData['wish'] = self::prepareWish($post);
+        //в это поле сохраним весь массив
+        $orderData['raw_data'] = json_encode($post);
+        //$orderData['manager_id'] = self::findRightManager($post);
 
         $booking = new Booking();
         if ($booking->load($orderData, '')) {
@@ -133,6 +137,9 @@ class BookingController extends Controller
         $booking->name = $post['name'];
         $booking->phone = $post['phone'];
         $booking->email = $post['email'];
+        $savedRawData = json_decode($booking->raw_data, true);
+        $savedRawData = array_merge($savedRawData, $post);
+        $booking->raw_data = json_encode($savedRawData);
         if ($booking->validate()) {
             $booking->save();
             //BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
@@ -168,6 +175,168 @@ class BookingController extends Controller
             ->setTo($emailTo)
             ->setSubject('Добавлена новая заявка')
             ->send();
+    }
+
+    public static function isEqualFields($equalFileds, $conditionArray, $orderArray)
+    {
+        $equalCount = 0;
+        $equalValue = 0;
+        foreach ($equalFileds as $equalField) {
+            list($key, $method) = explode(':', $equalField);
+            //важно чтобы ключ содержался и в первом и во втором массиве
+            if (!isset($conditionArray[$key]) || !isset($orderArray[$key])) {
+                continue;
+            }
+            $equalCount++;
+
+            switch ($method) {
+                case '=':
+                    if ($conditionArray[$key] == $orderArray[$key]) {
+                        $equalValue++;
+                    }
+                    break;
+                case 'IN':
+                    if (in_array($conditionArray[$key], $orderArray[$key])) {
+                        $equalValue++;
+                    }
+                    break;
+            }
+        }
+        return $equalCount == $equalValue;
+    }
+
+    /**
+     * Подбор подходящего менеджера
+     *
+     * @param $postData - данные с формы
+     * return id менеджера
+     */
+    public static function findRightManager($postData)
+    {
+        $equalFields = [
+            'country:=',
+            'city:=',
+            'stars:IN',
+        ];
+
+
+
+        //получим все условия и найдем точное совпадение
+        $conditions = Condition::findAllConditions();
+
+        if ($manager = self::findManagerInTourRows($postData, $conditions, $equalFields)) {
+            return $manager;
+        }
+        if ($manager = self::findManagerInHotelRows($postData, $conditions, $equalFields)) {
+            return $manager;
+        }
+
+        die('попробуем найти в тексте совпадения по регулярному выражению');
+        //попробуем найти в тексте совпадения по регулярному выражению
+        //если пользователь отправил форму Нестандартный подбор
+    }
+
+    /*
+     * Ищем менеджера в Турпакетах Комплексной формы
+     */
+    private static function findManagerInTourRows($postData, $conditions, $equalFields)
+    {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
+
+            foreach ($postData['tour']['items'] as $item) {
+                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
+                if ($item['active'] == 0) continue;
+                $countryName = $cityName = '';
+                if (!empty($item['countryId'])) {
+                    $countryName = static::findCountryNameById($item['countryId']);
+                }
+                if (!empty($item['cityId'])) {
+                    $cityName = static::findCityNameById($item['cityId']);
+                }
+                //получаем Звездность отеля
+                $stars = [];
+                if (!empty($item['params']['tour_category'])) {
+                    $alloccat = AlloccatDictionary::find()
+                        ->select('name')
+                        ->where(['id' => $item['params']['tour_category'] ])
+                        ->asArray()
+                        ->all();
+                    foreach ($alloccat as $alloccatItem) {
+                        $stars[] = str_replace('*', '', $alloccatItem['name']);
+                    }
+                }
+                $currentData = [
+                    'country' => $countryName,
+                    'city' => $cityName,
+                    'stars' => $stars,
+                ];
+                foreach ($conditions as $conditionManagerItem) {
+                    $res = self::isEqualFields($equalFields, $conditionManagerItem['condition'], $currentData);
+                    if ($res) {
+                        return $conditionManagerItem['manager_id'];
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /*
+     * Ищем менеджера в Отелях Комплексной формы
+     */
+    private static function findManagerInHotelRows($postData, $conditions, $equalFields)
+    {
+
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'hotel' &&
+            array_key_exists('hotels', $postData)) {
+
+            $output[] = 'Данные по Конкретным отелям';
+            $iter = 1;
+            foreach ($postData['hotels']['items'] as $item) {
+                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
+                if ($item['active'] == 0) continue;
+                if (!empty($item['hotelId'])) {
+                    $hotel = HotelDictionary::find()
+                        ->with('resort')
+                        ->where(['id' => $item['hotelId']])
+                        ->asArray()
+                        ->one();
+                    $cityName = $hotel['resort']['name'];
+                    $countryName = static::findCountryNameById($hotel['resort']['country']);
+
+                    //получаем Звездность отеля
+                    $stars = [];
+                    if (!empty($hotel['cat'])) {
+                        $alloccat = AlloccatDictionary::find()
+                            ->select('name')
+                            ->where(['id' => $hotel['cat'] ])
+                            ->asArray()
+                            ->all();
+                        foreach ($alloccat as $alloccatItem) {
+                            $stars[] = str_replace('*', '', $alloccatItem['name']);
+                        }
+                    }
+                    $currentData = [
+                        'country' => $countryName,
+                        'city' => $cityName,
+                        'stars' => $stars,
+                    ];
+                    foreach ($conditions as $conditionManagerItem) {
+
+                        $res = self::isEqualFields($equalFields, $conditionManagerItem['condition'], $currentData);
+                        if ($res) {
+                            return $conditionManagerItem['manager_id'];
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return false;
     }
 
     /*
@@ -249,7 +418,10 @@ class BookingController extends Controller
     {
         $output = [];
         //если присутствуют данные по турпакетам
-        if ($postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'tours' &&
+            array_key_exists('tour', $postData)) {
+
             $output[] = 'Данные по Турпакетам';
             $iter = 1;
             foreach ($postData['tour']['items'] as $item) {
@@ -267,7 +439,10 @@ class BookingController extends Controller
             }
         }
         //если присутствуют данные по Конкретным отелям
-        if ($postData['params']['order_type'] == 'hotel' && array_key_exists('hotels', $postData)) {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'hotel' &&
+            array_key_exists('hotels', $postData)) {
+
             $output[] = 'Данные по Конкретным отелям';
             $iter = 1;
             foreach ($postData['hotels']['items'] as $item) {
@@ -329,7 +504,10 @@ class BookingController extends Controller
 
         $output[] = 'Данные по Турпакетам';
         //если присутствуют данные по турпакетам
-        if ($postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'tours' &&
+            array_key_exists('tour', $postData)) {
+
             $output[] = 'Данные по Турпакетам';
             $iter = 1;
             foreach ($postData['tour']['items'] as $item) {
@@ -435,7 +613,10 @@ class BookingController extends Controller
             }
         }
         //если присутствуют данные по Конкретным отелям
-        if ($postData['params']['order_type'] == 'hotel' && array_key_exists('hotels', $postData)) {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'hotel' &&
+            array_key_exists('hotels', $postData)) {
+
             $output[] = 'Данные по Конкретным отелям';
             $iter = 1;
 

@@ -3,9 +3,11 @@
 /* @var $this yii\web\View */
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+use app\modules\admin\models\Condition;
 
 $this->title = 'TopHotels';
 ?>
+
 <div class="tabs-block">
     <div class="tabs-bar   tabs-bar--responsive js-768-tabs">
         <div id="step1" class="tab active">Подбор тура</div>

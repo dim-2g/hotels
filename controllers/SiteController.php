@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\CountryDictionary;
+use app\modules\admin\models\Manager;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -84,6 +85,23 @@ class SiteController extends Controller
         return $this->render('index', [
             'data' => $formData
         ]);
+    }
+
+    public function actionTest()
+    {
+        $data = json_decode(Booking::findOne(56)->raw_data, true);
+        /*
+        echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+        */
+        $manager = BookingController::findRightManager($data);
+        if ($manager) {
+            $managerName = Manager::findOne($manager)->name;
+            echo "Будет назначен менеджер $managerName";
+            die();
+        }
+        die('Не удалось определить менеджера');
     }
 
 }

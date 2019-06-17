@@ -32,6 +32,7 @@ class Booking extends ActiveRecord
             ['persons', 'trim'],
             ['budget', 'trim'],
             ['tourist_city', 'required', 'message' => 'Поле "Ваш город" обязательное для заполнения'],
+            ['raw_data', 'trim'],
         ];
     }
 
