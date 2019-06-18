@@ -28,12 +28,14 @@ class BookingController extends Controller
         5 => 'бел.р.',
         6 => 'тен.',
     ];
+
     public static $childrenParams = [
         'potty' => 'Детский горшок',
         'meal' => 'Детские блюда',
         'changing_table' => 'Пеленальный столик',
         'animation' => 'Анимация',
     ];
+
     public static $otherParams = [
         'animation' => 'Веселая анимация',
         'parties' => 'Тусовки рядом с отелем',
@@ -124,6 +126,9 @@ class BookingController extends Controller
         return json_encode($response);
     }
 
+    /*
+     * Добавляем данные к существующему заказу
+     */
     public function actionStoreAdd()
     {
         $response = [
