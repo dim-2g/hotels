@@ -49,7 +49,7 @@ $this->title = 'TopHotels';
                         'jsFormObject' => 'var formDate',
                         'dateFrom' => $data['dateFrom'],
                         'dateTo' => $data['dateTo'],
-                        //'dateConfig' => ['startDate' => '2019-06-14']
+                        //'dateConfig' => ['startDate' => '2019-06-14'] // не работает подобный параметр, чтобы
                     ]); ?>
 
                     <?= \LibUiTourFilter\widgets\WNights::widget([
@@ -84,10 +84,6 @@ $this->title = 'TopHotels';
                         'priceComfort' => 100000,
                         'forceShowPrice' => true,
                     ]); ?>
-                    <?/* $this->registerJs('lsfw.pages.tourSearch.formPrix.forceShowPrice = true;') ?>
-                    <? $this->registerJs('lsfw.pages.tourSearch.formPrix.reloadPriceLabel();') */?>
-
-
 
                 </div>
                 <div class="tour-selection-wrap-in">

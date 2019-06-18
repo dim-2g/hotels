@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use app\modules\admin\models\Manager;
 
 /* @var $this yii\web\View */
 /* @var $model app\modules\admin\models\Booking */
@@ -35,6 +36,18 @@ $this->params['breadcrumbs'][] = $this->title;
             'phone:ntext',
             'parametrs:ntext',
             'created_at:ntext',
+            'wish:ntext',
+            [
+                    'attribute' => 'manager_id',
+                    'value' => function($data) {
+                        $managerText = 'нет распределения,<br /> так как нет направления';
+                        if (!empty($data->manager_id)) {
+                            $manager = Manager::find()->where(['id' => $data->manager_id])->limit(1)->one();
+                            $managerText = $manager->name;
+                        }
+                        return $managerText;
+                    }
+            ],
         ],
     ]) ?>
 

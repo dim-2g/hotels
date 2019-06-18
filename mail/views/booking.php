@@ -45,7 +45,7 @@
 
                             <tr>
                                 <td style="font: 16px Arial, sans-serif;line-height: 20px;padding: 35px 30px 20px;text-align: center;">
-                                    Здравствуйте!
+                                    Здравствуйте, <?=$managerName?>!
                                 </td>
                             </tr>
 
@@ -95,12 +95,6 @@
                                                 Телефон: <?=$orderPhone?>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td style="font: 15px Arial, sans-serif;line-height: 20px;padding: 0 15px 5px;">
-                                                <?=$orderParametrs?>
-                                            </td>
-                                        </tr>
-
 
                                         </tbody>
                                     </table>

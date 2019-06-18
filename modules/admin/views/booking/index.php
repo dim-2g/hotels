@@ -42,6 +42,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     },
                     'format' => 'raw'
             ],
+            'wish:ntext',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

@@ -11,6 +11,7 @@ use app\models\HotelDictionary;
 use app\modules\admin\models\Condition;
 use app\modules\admin\models\Manager;
 use Yii;
+use yii\helpers\Url;
 use yii\web\Controller;
 use app\models\Booking;
 use app\models\BookingExt;
@@ -72,7 +73,6 @@ class BookingController extends Controller
         if ($booking->load($post, '')) {
             if ($booking->validate()) {
                 $booking->save();
-                //BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
                 $response['success'] = true;
             } else {
                 $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
@@ -115,7 +115,6 @@ class BookingController extends Controller
         if ($booking->load($orderData, '')) {
             if ($booking->validate()) {
                 $booking->save();
-                //BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
                 $response['success'] = true;
                 $response['data']['id'] = $booking->id;
             } else {
@@ -148,7 +147,6 @@ class BookingController extends Controller
         $booking->raw_data = json_encode($savedRawData);
         if ($booking->validate()) {
             $booking->save();
-            //BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
             $response['success'] = true;
         } else {
             $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
@@ -157,7 +155,12 @@ class BookingController extends Controller
         return json_encode($response);
     }
 
-
+    /*
+     * Отправка письма
+     * @param $bookingRecord - экземпляр АР модели Booking
+     * @param string $emailTo - email адрес получателя
+     * return bool
+     */
     public static function sendMail($bookingRecord, $emailTo)
     {
         $message = [];
@@ -183,6 +186,43 @@ class BookingController extends Controller
             ->send();
     }
 
+    /*
+     * Отправка письма
+     * @param $bookingRecord - экземпляр АР модели Booking
+     * @param $manager - экземпляр АР модели Manager
+     * return bool
+     */
+    public static function sendMailEx($bookingRecord, $manager)
+    {
+        $message = [];
+        $message[] = "Поступила заявка № {$bookingRecord->id}";
+        $message[] = "Страна, курорт, отель: {$bookingRecord->parametrs}";
+        $message[] = "Имя: {$bookingRecord->name}";
+        $message[] = "Телефон: {$bookingRecord->phone}";
+        $message[] = "Email {$bookingRecord->email}";
+        $emailTo = $manager->email;
+        return Yii::$app->mailer->compose('views/booking', [
+            'managerName' => $manager->name,
+            'orderNumber' => $bookingRecord->id,
+            'orderName' => $bookingRecord->name,
+            'orderPhone' => $bookingRecord->phone,
+            'orderParametrs' => $bookingRecord->parametrs,
+            'briefLink' => Url::to(['admin/booking/view', 'id' => $bookingRecord->id], true),
+            'briefList' => Url::to(['admin/booking'], true),
+            'emailTo' => $emailTo,
+            'supportLink' => 'https://tophotels.ru/feedback',
+        ])
+            ->setFrom('hotels@modxguru.ru')
+            ->setTo($emailTo)
+            ->setSubject('Добавлена новая заявка')
+            ->send();
+    }
+
+    /*
+     * Поиск менеджерапо данный из формы Нестандартный подбор
+     * @param $postData - POST данные с формы
+     * return id менеджера
+     */
     public static function findManagerForCustomForm($postData)
     {
         //получим все условия и найдем точное совпадение
@@ -204,6 +244,13 @@ class BookingController extends Controller
         return false;
     }
 
+    /*
+     * Проверяет соответствие массивов Критерия и Претендента по массиву Правил
+     * @param $equalFileds - массив Парвил
+     * @param $conditionArray - массив критериев из АР Condition
+     * @param $orderArray - массив с проверяемыми данными
+     * return id менеджера
+     */
     private static function isEqualFields($equalFileds, $conditionArray, $orderArray)
     {
         $equalCount = 0;
@@ -238,10 +285,9 @@ class BookingController extends Controller
     }
 
     /**
-     * Подбор подходящего менеджера
-     *
+     * Комплексный метод подбора подходящего менеджера
      * @param $postData - данные с формы
-     * return id менеджера
+     * return id менеджера либо false
      */
     public static function findRightManager($postData)
     {
@@ -253,7 +299,6 @@ class BookingController extends Controller
 
         //получим все условия и найдем точное совпадение
         $conditions = Condition::findAllConditions();
-
         if ($manager = self::findManagerInTourRows($postData, $conditions, $equalFields)) {
             return $manager;
         }
@@ -281,8 +326,7 @@ class BookingController extends Controller
      */
     private static function hasCountryInTourRows($postData)
     {
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
+        if (self::hasTours($postData)) {
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
                 if ($item['active'] == 0) continue;
@@ -295,14 +339,18 @@ class BookingController extends Controller
         return false;
     }
 
+    private static function isOrderTour()
+    {
+
+    }
+
     /*
      * Проверяем, есть ли данные по стране в строках с отелями
      * @param $postData - данные с формы
      */
     private static function hasCountryInHotelsRows($postData)
     {
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'hotel' && array_key_exists('hotels', $postData)) {
+        if (self::hasHotels($postData)) {
             foreach ($postData['hotels']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
                 if ($item['active'] == 0) continue;
@@ -373,9 +421,7 @@ class BookingController extends Controller
      */
     private static function findManagerInTourRows($postData, $conditions, $equalFields)
     {
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
-
+        if (self::hasTours($postData)) {
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
                 if ($item['active'] == 0) continue;
@@ -421,10 +467,7 @@ class BookingController extends Controller
     private static function findManagerInHotelRows($postData, $conditions, $equalFields)
     {
 
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'hotel' &&
-            array_key_exists('hotels', $postData)) {
-
+        if (self::hasHotels($postData)) {
             $output[] = 'Данные по Конкретным отелям';
             $iter = 1;
             foreach ($postData['hotels']['items'] as $item) {
@@ -550,11 +593,7 @@ class BookingController extends Controller
     {
         $output = [];
         //если присутствуют данные по турпакетам
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'tours' &&
-            array_key_exists('tour', $postData)) {
-
-            $output[] = 'Данные по Турпакетам';
+        if (self::hasTours($postData)) {
             $iter = 1;
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
@@ -571,11 +610,7 @@ class BookingController extends Controller
             }
         }
         //если присутствуют данные по Конкретным отелям
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'hotel' &&
-            array_key_exists('hotels', $postData)) {
-
-            $output[] = 'Данные по Конкретным отелям';
+        if (self::hasHotels($postData)) {
             $iter = 1;
             foreach ($postData['hotels']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
@@ -634,13 +669,8 @@ class BookingController extends Controller
             $output[] = $postData['params']['wish'];
         }
 
-        $output[] = 'Данные по Турпакетам';
         //если присутствуют данные по турпакетам
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'tours' &&
-            array_key_exists('tour', $postData)) {
-
-            $output[] = 'Данные по Турпакетам';
+        if (self::hasTours($postData)) {
             $iter = 1;
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
@@ -745,13 +775,8 @@ class BookingController extends Controller
             }
         }
         //если присутствуют данные по Конкретным отелям
-        if (!empty($postData['params']['order_type']) &&
-            $postData['params']['order_type'] == 'hotel' &&
-            array_key_exists('hotels', $postData)) {
-
-            $output[] = 'Данные по Конкретным отелям';
+        if (self::hasHotels($postData)) {
             $iter = 1;
-
             $outputRow = [];
             //получаем Город вылета
             if (!empty($postData['hotels']['departmentId'])) {
@@ -794,6 +819,28 @@ class BookingController extends Controller
         }
 
         return implode("\n", $output);
+    }
+
+    /*
+     * Проверяет, есть ли в массиве данные по отелям (строки Конкретный отель)
+     * * @param $postData - данные с формы
+     */
+    private static function hasTours($postData)
+    {
+        return (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'tours' &&
+            array_key_exists('tour', $postData));
+    }
+
+    /*
+     * Проверяет, есть ли в массиве данные по турам (строки Турпакета)
+     * * @param $postData - данные с формы
+     */
+    private static function hasHotels($postData)
+    {
+        return (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'hotel' &&
+            array_key_exists('hotels', $postData));
     }
 
 }
