@@ -89,13 +89,10 @@ class SiteController extends Controller
 
     public function actionTest()
     {
-        $data = json_decode(Booking::findOne(56)->raw_data, true);
-        /*
-        echo '<pre>';
-        print_r($data);
-        echo '</pre>';
-        */
-        $manager = BookingController::findRightManager($data);
+        //$data = json_decode(Booking::findOne(57)->raw_data, true);
+        $data = Booking::find()->where(['id' => 61])->limit(1)->asArray()->one();
+
+        $manager = BookingController::findManagerForCustomForm($data);
         if ($manager) {
             $managerName = Manager::findOne($manager)->name;
             echo "Будет назначен менеджер $managerName";

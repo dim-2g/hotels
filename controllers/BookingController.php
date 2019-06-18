@@ -9,9 +9,11 @@ use app\models\CityDictionary;
 use app\models\CountryDictionary;
 use app\models\HotelDictionary;
 use app\modules\admin\models\Condition;
+use app\modules\admin\models\Manager;
 use Yii;
 use yii\web\Controller;
 use app\models\Booking;
+use app\models\BookingExt;
 use app\helpers\BookingHelper;
 
 class BookingController extends Controller
@@ -62,12 +64,15 @@ class BookingController extends Controller
             'success' => false,
             'errors' => [],
         ];
+        $post = Yii::$app->request->post();
+        $managerId = self::findManagerForCustomForm($post);
+        $post['manager_id'] = $managerId ? $managerId : '';
 
         $booking = new Booking();
-        if ($booking->load(Yii::$app->request->post(), '')) {
+        if ($booking->load($post, '')) {
             if ($booking->validate()) {
                 $booking->save();
-                BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
+                //BookingHelper::sendMail($booking, 'dim-2g@yandex.ru');
                 $response['success'] = true;
             } else {
                 $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
@@ -103,9 +108,10 @@ class BookingController extends Controller
         $orderData['wish'] = self::prepareWish($post);
         //в это поле сохраним весь массив
         $orderData['raw_data'] = json_encode($post);
-        //$orderData['manager_id'] = self::findRightManager($post);
+        $managerId = self::findRightManager($post);
+        $orderData['manager_id'] = $managerId ? $managerId : '';
 
-        $booking = new Booking();
+        $booking = new BookingExt();
         if ($booking->load($orderData, '')) {
             if ($booking->validate()) {
                 $booking->save();
@@ -132,7 +138,7 @@ class BookingController extends Controller
         } else {
             $post['tourist_city'] = '';
         }
-        $booking = Booking::findOne($post['order_id']);
+        $booking = BookingExt::findOne($post['order_id']);
         $booking->tourist_city = $post['tourist_city'];
         $booking->name = $post['name'];
         $booking->phone = $post['phone'];
@@ -177,14 +183,40 @@ class BookingController extends Controller
             ->send();
     }
 
-    public static function isEqualFields($equalFileds, $conditionArray, $orderArray)
+    public static function findManagerForCustomForm($postData)
+    {
+        //получим все условия и найдем точное совпадение
+        $conditions = Condition::findAllConditions();
+        //попробуем найти заявки с Нестандартной формы с вхождением по Городу и Стране.
+        if ($manager = self::findManagerInCustomFormByCountryCity($postData, $conditions)) {
+            return $manager;
+        }
+
+        //получим список всех стран и попробуем найти вхождение.
+        //если найдется, то назначим general менеджеру
+        $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+        if (!empty($generalManager->id)) {
+            if (self::findManagerInCustomFormByCountries($postData)) {
+                return $generalManager->id;
+            }
+        }
+
+        return false;
+    }
+
+    private static function isEqualFields($equalFileds, $conditionArray, $orderArray)
     {
         $equalCount = 0;
         $equalValue = 0;
-        foreach ($equalFileds as $equalField) {
-            list($key, $method) = explode(':', $equalField);
+        //проходим по всем условиям
+        foreach ($conditionArray as $key => $equalField) {
             //важно чтобы ключ содержался и в первом и во втором массиве
-            if (!isset($conditionArray[$key]) || !isset($orderArray[$key])) {
+            $method = '=';
+            if (isset($equalFileds[$key])) {
+                $method = $equalFileds[$key];
+            }
+            // проверяем есть ли такой ключ  в проверяемом массиве
+            if (!isset($orderArray[$key])) {
                 continue;
             }
             $equalCount++;
@@ -214,12 +246,10 @@ class BookingController extends Controller
     public static function findRightManager($postData)
     {
         $equalFields = [
-            'country:=',
-            'city:=',
-            'stars:IN',
+            'country' => '=',
+            'city' => '=',
+            'stars' => 'IN',
         ];
-
-
 
         //получим все условия и найдем точное совпадение
         $conditions = Condition::findAllConditions();
@@ -230,10 +260,112 @@ class BookingController extends Controller
         if ($manager = self::findManagerInHotelRows($postData, $conditions, $equalFields)) {
             return $manager;
         }
+        //если не нашли, то проверим, есть ли вхождение Страны в заявке, чтобы отправит General менеджеру
+        //получим менеджера
+        $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+        if (!empty($generalManager->id)) {
+            if (self::hasCountryInTourRows($postData)) {
+                return $generalManager->id;
+            }
+            if (self::hasCountryInHotelsRows($postData)) {
+                return $generalManager->id;
+            }
+        }
 
-        die('попробуем найти в тексте совпадения по регулярному выражению');
-        //попробуем найти в тексте совпадения по регулярному выражению
-        //если пользователь отправил форму Нестандартный подбор
+        return false;
+    }
+
+    /*
+     * Проверяем, есть ли в направениях данные по стране
+     * @param $postData - данные с формы
+     */
+    private static function hasCountryInTourRows($postData)
+    {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'tours' && array_key_exists('tour', $postData)) {
+            foreach ($postData['tour']['items'] as $item) {
+                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
+                if ($item['active'] == 0) continue;
+                if (!empty($item['countryId'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /*
+     * Проверяем, есть ли данные по стране в строках с отелями
+     * @param $postData - данные с формы
+     */
+    private static function hasCountryInHotelsRows($postData)
+    {
+        if (!empty($postData['params']['order_type']) &&
+            $postData['params']['order_type'] == 'hotel' && array_key_exists('hotels', $postData)) {
+            foreach ($postData['hotels']['items'] as $item) {
+                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
+                if ($item['active'] == 0) continue;
+                //если есть идентификатор отеля, то точно можно страну узнать
+                if (!empty($item['hotelId'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /*
+     * Поиск по полю Параметры при Нестандартном запросе. Пытаемся найти вхождение Страны по списку всех стран
+     * @param $postData - данные из формы
+     */
+    private static function findManagerInCustomFormByCountries($postData)
+    {
+        $countries = CountryDictionary::find()
+            ->where(['active' => 1, 'trash' => 0])
+            ->asArray()
+            ->orderBy(['name' => SORT_ASC])
+            ->all();
+        if (!empty($postData['parametrs'])) {
+            foreach ($countries as $country) {
+                //если в тексте нашли вхождение страны
+                if (preg_match('#'.$country['name'].'#siU', $postData['parametrs'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /*
+     * Поиск по полю Параметры при Нестандартном запросе. Пытаемся найти вхождение Страны и города
+     * @param $postData - данные из формы
+     * @param $conditions - массив услови менеджеров
+     */
+    private static function findManagerInCustomFormByCountryCity($postData, $conditions)
+    {
+        $onlyFields = ['country', 'city'];
+        foreach ($conditions as $conditionManagerItem) {
+            foreach ($conditionManagerItem as $conditionItem) {
+                if (count($conditionItem) == 2 &&
+                    isset($conditionItem['country']) &&
+                    isset($conditionItem['city'])) {
+
+                    if (!empty($postData['parametrs'])) {
+                        //если в тексте нашли вхождение страны
+                        if (preg_match('#'.$conditionItem['country'].'#siU', $postData['parametrs'])) {
+                            //если в тексте нашли вхождение города
+                            if (preg_match('#'.$conditionItem['city'].'#siU', $postData['parametrs'])) {
+                                return $conditionManagerItem['manager_id'];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /*

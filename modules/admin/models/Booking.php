@@ -60,6 +60,7 @@ class Booking extends \yii\db\ActiveRecord
             'persons' => 'Гости',
             'budget' => 'Бюджет',
             'tourist_city' => 'Город туриста',
+            'manager_id' => 'Менеджер',
         ];
     }
 }

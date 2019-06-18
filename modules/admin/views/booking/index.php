@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use app\modules\admin\models\Manager;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -29,6 +30,18 @@ $this->params['breadcrumbs'][] = $this->title;
             'phone:ntext',
             'parametrs:ntext',
             'created_at:ntext',
+            [
+                    'attribute' => 'manager_id',
+                    'value' => function($data) {
+                        $managerText = 'нет распределения,<br /> так как нет направления';
+                        if (!empty($data->manager_id)) {
+                            $manager = Manager::find()->where(['id' => $data->manager_id])->limit(1)->one();
+                            $managerText = $manager->name;
+                        }
+                        return $managerText;
+                    },
+                    'format' => 'raw'
+            ],
 
             ['class' => 'yii\grid\ActionColumn'],
         ],
