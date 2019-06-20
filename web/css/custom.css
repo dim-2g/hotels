@@ -34,6 +34,7 @@
     vertical-align: bottom;
     font-weight: bold;
     font-size: 16px;
+    text-transform: uppercase;
 }
 
 .order-form__step-2{
