@@ -202,15 +202,15 @@ $(document).ready(function () {
     //обрабатываем выбор Питания на вкладке Конкретный отель
     $('body').on('click', '[name="meal[]"]', function() {
         var currentValue = $(this).val();
+        var inputAny = $('.js-types-search-hotel-blocks [name="meal[]"][value="any"]');
         if (currentValue == 'any') {
             $('.js-types-search-hotel-blocks [name="meal[]"]').not('[value="any"]').prop("checked", false);
         } else {
-            var inputAny = $('.js-types-search-hotel-blocks [name="meal[]"][value="any"]');
             inputAny.prop("checked", false);
             //проверим, если ниодно не выбрано, установим Любое
-            if ($('.js-types-search-hotel-blocks [name="meal[]"]:checked').not('[value="any"]').length == 0) {
-                inputAny.prop("checked", true);
-            }
+        }
+        if ($('.js-types-search-hotel-blocks [name="meal[]"]:checked').length == 0) {
+            inputAny.prop("checked", true);
         }
         //записываем выбранные значения
         orderHotel.meal = [];
