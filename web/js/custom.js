@@ -587,6 +587,7 @@ addCountryInAllSelects = function(jsonCountry) {
 // jsonCountry - набор данных по странам
 addDepartmentCityInAllSelects = function(jsonCities) {
     $(selectorDepartmentCity).each(function(index, elementSelect) {
+        console.log(jsonCities);
         jsonCities.forEach(function(item) {
             elementSelect.sumo.add(item.id, item.name);
         });
