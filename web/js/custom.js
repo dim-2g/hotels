@@ -67,6 +67,7 @@ $(document).ready(function () {
     setSumoSelect($(selectorDirection), 'укажите страну');
     setSumoSelect($(selectorDirectionCity), 'не важно');
     setSumoSelect($(selectorDepartmentCity), 'без перелета');
+    setHotelMeal('.js-types-search-hotel-blocks [name="meal[]"]', 'any');
     //загружаем список стран
     initDirectionSelect();
     //загружаем города вылета
@@ -308,6 +309,14 @@ $(document).ready(function () {
 
 });
 
+//устанавливаем значение по умолчанию для простого селектора
+//selector - селектор input, который установить как выбранный по-умолчанию
+//defaultCheckedValue - значение селектора, которое должно быть выбрано
+var setHotelMeal = function(selector, defaultCheckedValue) {
+    var targetInput = $(selector+'[value="'+defaultCheckedValue+'"]');
+    targetInput.prop("checked", true);
+    setSumoSelect($(selector), targetInput.next().text());
+};
 
 // Принудительно корректируем ширину активного таба, если хеш
 // отличается от id текущего таба.
@@ -319,7 +328,6 @@ var correctWidthUnderline = function() {
         underline.css({"width": activeTabWidth});
     }
 };
-
 
 //Добавляем заказ данными со второго шага
 var storeOrderStep2 = function(data) {
@@ -680,7 +688,11 @@ findCurrentRowNumber = function(element) {
 reinitSumoSearch = function(selectorSumo, func = 'reinitSumoSearchFunc') {
     var sumoSelect = $(selectorSumo);
     if (sumoSelect.length > 0) {
-        sumoSelect.get(0).sumo.Search = window[func](sumoSelect.get(0).sumo);
+        sumoSelect.each(function(index, select) {
+            console.log(select);
+            select.sumo.Search = window[func](select.sumo);
+        });
+
     }
 };
 

@@ -616,8 +616,7 @@ $this->title = 'TopHotels';
                         <div class="tour-selection-field tour-selection-field--250">
                             <div class="bth__inp-block js-show-formDirections">
                                 <span class="bth__inp-lbl ">Город вылета</span>
-                                <span class="bth__inp">
-                                    </span>
+                                <span class="bth__inp uppercase"></span>
                             </div>
 
                             <div class="formDirections w100p" style="display: none;">
@@ -638,7 +637,7 @@ $this->title = 'TopHotels';
 
                         </div>
                         <div class="tour-selection-field tour-selection-field--250">
-                            <div class="bth__inp-block js-show-formDirections">
+                            <div class="bth__inp-block bth__inp-block--meal js-show-formDirections">
 
                                 <span class="bth__inp-lbl ">Питание</span>
                                 <span class="bth__inp">
