@@ -13,27 +13,23 @@ use app\modules\admin\models\Manager;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
-/**
- * This command echoes the first argument that you have entered.
- *
- * This command is provided as an example for you to learn how to create console commands.
- *
- * @author Qiang Xue <qiang.xue@gmail.com>
- * @since 2.0
+
+/*
+ * Отправляем уведомления о заказе
+ * Сравнивает текущее время и время создания заявки
+ * если прошло более 2х минут - отправляем уведомление, меняем поле notified на 1
  */
 class SendEmailController extends Controller
 {
     public function actionIndex()
     {
-
         $orders = Booking::find()->where(['notified' => null])
                                  ->andWhere(['not', ['manager_id' => null]])
                                  ->all();
 
         foreach ($orders as $order) {
             if (self::isTimeHasCome($order->created_at)) {
-                $manager = Manager::find()->where(['id' => $order->manager_id])->one();
-                if (BookingController::sendMailEx($order, $manager)) {
+                if (BookingController::sendMailEx($order)) {
                     $order->notified = 1;
                     $order->save();
                 }

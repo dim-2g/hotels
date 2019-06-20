@@ -194,11 +194,17 @@ class BookingController extends Controller
     /*
      * Отправка письма
      * @param $bookingRecord - экземпляр АР модели Booking
-     * @param $manager - экземпляр АР модели Manager
+     * @param $manager - экземпляр АР модели Manager, если не передавать, то будет выбираться из заявки
      * return bool
      */
-    public static function sendMailEx($bookingRecord, $manager)
+    public static function sendMailEx($bookingRecord, $manager = null)
     {
+        if (empty($manager)) {
+            $manager = Manager::find()->where(['id' => $bookingRecord->manager_id])->one();
+            if (empty($manager)) {
+                return false;
+            }
+        }
         $message = [];
         $message[] = "Поступила заявка № {$bookingRecord->id}";
         $message[] = "Страна, курорт, отель: {$bookingRecord->parametrs}";
@@ -217,7 +223,7 @@ class BookingController extends Controller
             'emailTo' => $emailTo,
             'supportLink' => 'https://tophotels.ru/feedback',
         ])
-            ->setFrom('hotels@modxguru.ru')
+            ->setFrom(Yii::$app->params['senderEmail'])
             ->setTo($emailTo)
             ->setSubject('Добавлена новая заявка')
             ->send();
@@ -669,11 +675,6 @@ class BookingController extends Controller
     public static function prepareWish($postData)
     {
         $output = [];
-        //сначала добавим данные заполненные клиентом в поле Дополнительные пожелания
-        if (!empty($postData['params']['wish'])) {
-            $output[] = $postData['params']['wish'];
-        }
-
         //если присутствуют данные по турпакетам
         if (self::hasTours($postData)) {
             $iter = 1;
@@ -821,6 +822,11 @@ class BookingController extends Controller
             $outputRow[] = 'Звездность ' . $hotelStar;
             //собираем воедино
             $output[] = implode(' / ', $outputRow);
+        }
+
+        //добавим данные заполненные клиентом в поле Дополнительные пожелания
+        if (!empty($postData['params']['wish'])) {
+            $output[] = $postData['params']['wish'];
         }
 
         return implode("\n", $output);

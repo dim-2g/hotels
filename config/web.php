@@ -3,6 +3,7 @@
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 $dbDictionary = require __DIR__ . '/db_dict.php';
+$mailer = require __DIR__ . '/mailer_google.php';
 
 $config = [
     'id' => 'basic',
@@ -37,21 +38,7 @@ $config = [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        'mailer' => [
-            'class' => 'yii\swiftmailer\Mailer',
-            // send all mails to a file by default. You have to set
-            // 'useFileTransport' to false and configure a transport
-            // for the mailer to send real emails.
-            'useFileTransport' => false,
-            'transport' => [
-                'class' => 'Swift_SmtpTransport',
-                'host' => 'smtp.yandex.ru',
-                'username' => 'hotels@modxguru.ru',
-                'password' => 'Nl9kOz5E',
-                'port' => '587',
-                'encryption' => 'TLS',
-            ],
-        ],
+        'mailer' => $mailer,
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
