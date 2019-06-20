@@ -134,7 +134,7 @@ $(document).ready(function () {
         $(window.location.hash).click();
 
     $(window).bind('hashchange', function () {
-        $(window.location.hash).click();
+       // $(window.location.hash).click();
     });
     $('.js-type2').on('click', function () {
         $('.js-types-search-tours-blocks').hide();

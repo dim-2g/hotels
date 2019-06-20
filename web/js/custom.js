@@ -74,6 +74,8 @@ $(document).ready(function () {
     initDepartmentCitySelect();
     //при клике на контрол с выпадающим списком
     $('body').on('click', '.js-show-formDirections', function() {
+        //скроем все открытые списки, кроме текущего
+        $('.js-show-formDirections').not(this).parent().find('.formDirections').hide();
         //получаем номер строки на которой производим действия
         var tourRowNumber = findCurrentRowNumber($(this));
         if (!orderTour.hasDirection(tourRowNumber)) {
@@ -266,7 +268,6 @@ $(document).ready(function () {
     $('body').on('click', '.submit-hotel-params', function() {
         var rowNumber = findCurrentRowNumber($(this));
         var hotelParams = findCheckedTourParams(rowNumber);
-        console.log(hotelParams);
         setLabelHotelParamsControl(rowNumber);
         $(this).parents('.formDirections').hide();
         orderTour.addDirection(rowNumber, 'params', hotelParams);
@@ -438,7 +439,6 @@ var findCheckedTourParams = function(tourRowNumber) {
         params.tour_rating.push($(this).val());
     });
     $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_meal"]:checked').each(function(i) {
-        console.log($(this).val());
         params.tour_meal.push($(this).val());
     });
     $('.js-types-search-tours-blocks [data-tour-row="'+tourRowNumber+'"] [name^="tour_place"]:checked').each(function(i) {
@@ -598,7 +598,6 @@ addCountryInAllSelects = function(jsonCountry) {
 // jsonCountry - набор данных по странам
 addDepartmentCityInAllSelects = function(jsonCities) {
     $(selectorDepartmentCity).each(function(index, elementSelect) {
-        console.log(jsonCities);
         jsonCities.forEach(function(item) {
             elementSelect.sumo.add(item.id, item.name);
         });
@@ -692,7 +691,6 @@ reinitSumoSearch = function(selectorSumo, func = 'reinitSumoSearchFunc') {
     var sumoSelect = $(selectorSumo);
     if (sumoSelect.length > 0) {
         sumoSelect.each(function(index, select) {
-            console.log(select);
             select.sumo.Search = window[func](select.sumo);
         });
 
@@ -726,7 +724,6 @@ reinitSumoSearchFunc = function(sumoSelect){
         }).not('.hidden');
 
         searchText = encodeURIComponent(O.ftxt.val());
-        console.log(searchText);
         P.html('Нет совпадений для "{0}"'.replace(/\{0\}/g, searchText)).toggle(!hid.length);
 
         O.selAllState();

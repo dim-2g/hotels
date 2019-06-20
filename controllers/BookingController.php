@@ -446,14 +446,19 @@ class BookingController extends Controller
                 //получаем Звездность отеля
                 $stars = [];
                 if (!empty($item['params']['tour_category'])) {
-                    $alloccat = AlloccatDictionary::find()
-                        ->select('name')
-                        ->where(['id' => $item['params']['tour_category'] ])
-                        ->asArray()
-                        ->all();
-                    foreach ($alloccat as $alloccatItem) {
-                        $stars[] = str_replace('*', '', $alloccatItem['name']);
+                    if (self::isStarsAny($item['params']['tour_category'])) {
+                        $tmp[] = 'Любая';
+                    } else {
+                        $alloccat = AlloccatDictionary::find()
+                            ->select('name')
+                            ->where(['id' => $item['params']['tour_category'] ])
+                            ->asArray()
+                            ->all();
+                        foreach ($alloccat as $alloccatItem) {
+                            $stars[] = str_replace('*', '', $alloccatItem['name']);
+                        }
                     }
+                    $stars[] = 'Любая';
                 }
                 $currentData = [
                     'country' => $countryName,
@@ -693,14 +698,18 @@ class BookingController extends Controller
 
                 //получаем Звездность отеля
                 if (!empty($item['params']['tour_category'])) {
-                    $alloccat = AlloccatDictionary::find()
-                        ->select('name')
-                        ->where(['id' => $item['params']['tour_category'] ])
-                        ->asArray()
-                        ->all();
-                    $tmp = [];
-                    foreach ($alloccat as $alloccatItem) {
-                        $tmp[] = $alloccatItem['name'];
+                    if (self::isStarsAny($item['params']['tour_category'])) {
+                        $tmp[] = 'Любая';
+                    } else {
+                        $alloccat = AlloccatDictionary::find()
+                            ->select('name')
+                            ->where(['id' => $item['params']['tour_category'] ])
+                            ->asArray()
+                            ->all();
+                        $tmp = [];
+                        foreach ($alloccat as $alloccatItem) {
+                            $tmp[] = $alloccatItem['name'];
+                        }
                     }
                     $outputRow[] = 'Звездность ' . implode(',', $tmp);
                 }
@@ -830,6 +839,15 @@ class BookingController extends Controller
         }
 
         return implode("\n", $output);
+    }
+
+    /*
+     * Проверяет, что выбрана Любая звездность
+     * @param $stars - массив с вариантами звездности
+     */
+    private static function isStarsAny($stars)
+    {
+        return (count($stars) == 1 && $stars[0] == 'any');
     }
 
     /*

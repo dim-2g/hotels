@@ -40,3 +40,23 @@
 .order-form__step-2{
   display: none;
 }
+
+@media screen and (max-width: 827px) {
+    .formDirections .formDirections__bottom-item {
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .formDirections .formDirections__city .lsfw-flag--30w{
+        width: 30px;
+        height: 20px;
+    }
+    .formDirections .formDirections__count{
+        max-width: 90px;
+    }
+    .formDirections .formDirections__cut {
+        max-width: 145px;
+    }
+}

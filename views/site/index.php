@@ -853,7 +853,7 @@ $this->title = 'TopHotels';
                     <div class="tour-selection-field tour-selection-field--270 ">
                         <div class="bth__inp-block js-show-formDirections js-add-error">
                             <span class="bth__inp-lbl">Ваш город</span>
-                            <span class="bth__inp">
+                            <span class="bth__inp uppercase">
                                     <b class="uppercase"></b>
                                 </span>
                             <div class="hint-block hint-block--abs">
@@ -906,7 +906,7 @@ $this->title = 'TopHotels';
     </div>
 
 
-   <div class="panel form-panel" id="formPanel" >
+   <div class="panel form-panel" id="formPanel" style="display: none;">
 
         <div class="form-panel__success">
             <div class="bth__cnt fz18 bold">Спасибо, Ваша заявка отправлена и будет обработана в ближайшее время.</div>
