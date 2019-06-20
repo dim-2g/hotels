@@ -10,7 +10,7 @@ var fieldSelectorsComplexForm = {
     'phone': '.order-form__step-2 #phone3',
     'email': '.order-form__step-2 #mail2'
 };
-var tour = {
+var orderTour = {
     directions: [],
     addDirection: function(index, key, value) {
         if (this.directions[index]) {
@@ -76,7 +76,7 @@ $(document).ready(function () {
     $('body').on('click', '.js-show-formDirections', function() {
         //получаем номер строки на которой производим действия
         var tourRowNumber = findCurrentRowNumber($(this));
-        if (!tour.hasDirection(tourRowNumber)) {
+        if (!orderTour.hasDirection(tourRowNumber)) {
             //устанавливаем дефолтный заголовок выпадающго списка городов, если страна не выбрана
             setCaptionCitySelect(tourRowNumber, 'укажите страну');
         }
@@ -101,7 +101,7 @@ $(document).ready(function () {
         //устанавливаем заголовок выпадающго списка городов = названию страны
         setCaptionCitySelect(tourRowNumber, countryName);
         //добавляем в объект заказа выбранную страну
-        tour.addDirection(tourRowNumber, 'countryId', countryId);
+        orderTour.addDirection(tourRowNumber, 'countryId', countryId);
     });
 
     //при клике на конкретном городе
@@ -113,7 +113,7 @@ $(document).ready(function () {
         //получаем номер строки на которой производим действия
         var tourRowNumber = findCurrentRowNumber($(this));
         //добавляем в объект заказа выбранный город
-        tour.addDirection(tourRowNumber, 'cityId', cityId);
+        orderTour.addDirection(tourRowNumber, 'cityId', cityId);
     });
 
     //при клике на городе туриста
@@ -137,33 +137,31 @@ $(document).ready(function () {
         var orderType = findActiveTab();
         if (orderType == 'tours') {
             //добавляем в объект заказа выбранный город вылета
-            tour.addDirection(tourRowNumber, 'departmentId', cityId);
+            orderTour.addDirection(tourRowNumber, 'departmentId', cityId);
         }
         if (orderType == 'hotel') {
             orderHotel.departmentId = cityId;
         }
     });
 
-
     //при клике на Отправить в нестандартном запросе
     $('.btn-custom-order').on('click', function() {
         var buttonCustomBooking = $(this);
         submitCustomForm(buttonCustomBooking);
-
     });
 
     $('.js-add-field').on('click', function () {
         var hiddenTourRow = $(this).parents('.tour-selection-wrap').find('.tour-selection-wrap-in--hidden:eq(0)');
         if (hiddenTourRow.length > 0) {
             hiddenTourRow.removeClass('tour-selection-wrap-in--hidden');
-        };
+        }
     });
 
     $('.js-del-field').on('click', function () {
         var currentTourRow = $(this).parents('['+tourRowAttrSelector+']');
         currentTourRow.addClass('tour-selection-wrap-in--hidden');
         var tourRowNumber = findCurrentRowNumber($(this));
-        tour.hideDirection(tourRowNumber);
+        orderTour.hideDirection(tourRowNumber);
     });
 
     $('.js-add-hotel').on('click', function () {
@@ -207,7 +205,12 @@ $(document).ready(function () {
         if (currentValue == 'any') {
             $('.js-types-search-hotel-blocks [name="meal[]"]').not('[value="any"]').prop("checked", false);
         } else {
-            $('.js-types-search-hotel-blocks [name="meal[]"][value="any"]').prop("checked", false);
+            var inputAny = $('.js-types-search-hotel-blocks [name="meal[]"][value="any"]');
+            inputAny.prop("checked", false);
+            //проверим, если ниодно не выбрано, установим Любое
+            if ($('.js-types-search-hotel-blocks [name="meal[]"]:checked').not('[value="any"]').length == 0) {
+                inputAny.prop("checked", true);
+            }
         }
         //записываем выбранные значения
         orderHotel.meal = [];
@@ -266,7 +269,7 @@ $(document).ready(function () {
         console.log(hotelParams);
         setLabelHotelParamsControl(rowNumber);
         $(this).parents('.formDirections').hide();
-        tour.addDirection(rowNumber, 'params', hotelParams);
+        orderTour.addDirection(rowNumber, 'params', hotelParams);
     });
 
     //сабмит первого шанга
@@ -282,7 +285,7 @@ $(document).ready(function () {
         orderData.params.wish = $('.order-wish').text();
         orderData.params.order_type = findActiveTab();
         orderData.general = lsfw.bookingRequest;
-        orderData.tour.items = tour.directions;
+        orderData.tour.items = orderTour.directions;
 
         orderData.hotels.departmentId = orderHotel.departmentId;
         orderData.hotels.meal = orderHotel.meal;
