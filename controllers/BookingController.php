@@ -340,7 +340,7 @@ class BookingController extends Controller
         if (self::hasTours($postData)) {
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 if (!empty($item['countryId'])) {
                     return true;
                 }
@@ -364,7 +364,7 @@ class BookingController extends Controller
         if (self::hasHotels($postData)) {
             foreach ($postData['hotels']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 //если есть идентификатор отеля, то точно можно страну узнать
                 if (!empty($item['hotelId'])) {
                     return true;
@@ -435,7 +435,7 @@ class BookingController extends Controller
         if (self::hasTours($postData)) {
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 $countryName = $cityName = '';
                 if (!empty($item['countryId'])) {
                     $countryName = static::findCountryNameById($item['countryId']);
@@ -488,7 +488,7 @@ class BookingController extends Controller
             $iter = 1;
             foreach ($postData['hotels']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 if (!empty($item['hotelId'])) {
                     $hotel = HotelDictionary::find()
                         ->with('resort')
@@ -613,7 +613,7 @@ class BookingController extends Controller
             $iter = 1;
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 $countryName = $cityName = '';
                 if (!empty($item['countryId'])) {
                     $countryName = static::findCountryNameById($item['countryId']);
@@ -630,7 +630,7 @@ class BookingController extends Controller
             $iter = 1;
             foreach ($postData['hotels']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 if (!empty($item['hotelId'])) {
                     $hotel = HotelDictionary::find()
                         ->with('resort')
@@ -641,6 +641,7 @@ class BookingController extends Controller
                     $countryName = static::findCountryNameById($hotel['resort']['country']);
                     $hotelName = $hotel['name'];
                     $output[] = "$iter. $countryName / $cityName / $hotelName";
+                    $iter++;
                 }
             }
         }
@@ -685,7 +686,7 @@ class BookingController extends Controller
             $iter = 1;
             foreach ($postData['tour']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 $outputRow = [];
 
                 //получаем Город вылета
@@ -817,7 +818,7 @@ class BookingController extends Controller
             $hotelStar = '';
             foreach ($postData['hotels']['items'] as $item) {
                 //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if ($item['active'] == 0) continue;
+                if (empty($item['active'])) continue;
                 if (!empty($item['hotelId'])) {
                     $hotel = HotelDictionary::find()
                         ->with('category')
