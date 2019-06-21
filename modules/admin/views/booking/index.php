@@ -16,9 +16,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>
         <?= Html::a('Create Booking', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('<span class="glyphicon glyphicon-user"></span> Консультанты',
+                    ['/admin/manager/index'],
+                    ['class' => 'btn btn-default']) ?>
+
     </p>
 
-
+    <div class="booking-table">
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'columns' => [
@@ -43,10 +47,34 @@ $this->params['breadcrumbs'][] = $this->title;
                     'format' => 'raw'
             ],
             'wish:ntext',
-
+            [
+                    'attribute' => 'extended',
+                    'value' => function($data) {
+                        $extendedFields = json_decode($data->raw_data, true);
+                        $output = [];
+                        $output[] = "<b>Дата вылета</b>:<br /> {$extendedFields['general']['df']}&nbsp;-&nbsp;{$extendedFields['general']['dt']}";
+                        $output[] = "<b>Кол-во ночей</b>:<br /> {$extendedFields['general']['nf']}&nbsp;-&nbsp;{$extendedFields['general']['nt']}";
+                        $childs = [];
+                        foreach (['ch1' , 'ch2', 'ch3'] as $child) {
+                            if (!empty($extendedFields['general'][$child])) {
+                                $childs[] = $extendedFields['general'][$child];
+                            }
+                        }
+                        $childString = '';
+                        if (!empty($childs) && count($childs) > 0) {
+                            $childString = ' ('. implode(', ', $childs).' лет)';
+                        }
+                        $output[] = "<b>Кол-во человек</b>:<br /> взр.: {$extendedFields['general']['ad']}, детей: {$extendedFields['general']['ch']}{$childString}";
+                        $output[] = "<b>Бюджет</b>:<br /> {$data->budget}";
+                        $output[] = "<b>Город туриста</b>:<br /> {$data->tourist_city}";
+                        return implode('<br />', $output);
+                    },
+                    'format' => 'raw'
+            ],
             ['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>
+    </div>
 
 
 </div>

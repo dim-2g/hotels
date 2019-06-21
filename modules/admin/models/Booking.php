@@ -49,7 +49,7 @@ class Booking extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => '№ заявки',
+            'id' => '№',
             'name' => 'Имя',
             'email' => 'E-mail',
             'phone' => 'Телефон',
@@ -61,6 +61,7 @@ class Booking extends \yii\db\ActiveRecord
             'budget' => 'Бюджет',
             'tourist_city' => 'Город туриста',
             'manager_id' => 'Менеджер',
+            'extended' => 'Доп.инфо',
         ];
     }
 }

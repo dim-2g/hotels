@@ -64,14 +64,16 @@ $(document).ready(function () {
     reinitSumoSearch('.sumo-department');
     reinitSumoSearch('#sumo-list-city', 'reinitSumoSearchFuncTouristCity');
     //визуально устанавливаем дефолтные значения
-    setSumoSelect($(selectorDirection), 'укажите страну');
+    setSumoSelect($(selectorDirection), 'не важно');
     setSumoSelect($(selectorDirectionCity), 'не важно');
     setSumoSelect($(selectorDepartmentCity), 'без перелета');
+    //устанавливаем значение Любое для поля Питание
     setHotelMeal('.js-types-search-hotel-blocks [name="meal[]"]', 'any');
     //загружаем список стран
     initDirectionSelect();
     //загружаем города вылета
     initDepartmentCitySelect();
+
     //при клике на контрол с выпадающим списком
     $('body').on('click', '.js-show-formDirections', function() {
         //скроем все открытые списки, кроме текущего
@@ -102,6 +104,8 @@ $(document).ready(function () {
         initDirectionCitySelect(countryId, tourRowNumber);
         //устанавливаем заголовок выпадающго списка городов = названию страны
         setCaptionCitySelect(tourRowNumber, countryName);
+        //сбрасываем название города
+        setSumoSelect($(selectorDirectionCity), 'не важно');
         //добавляем в объект заказа выбранную страну
         orderTour.addDirection(tourRowNumber, 'countryId', countryId);
     });
@@ -179,6 +183,7 @@ $(document).ready(function () {
         orderHotel.hideDirection(tourRowNumber);
     });
 
+    //подгружаем список отелей, при вводе 3х символов
     $('body').on('keyup', '.formDirections__search input.bth__inp', function() {
         var searchText = $(this).val();
         if (searchText.length < 3) {
@@ -187,11 +192,11 @@ $(document).ready(function () {
         findHotels(searchText);
     });
 
+    //обрабатываем выбор конкретного отеля
     $('body').on('click', '[data-hotel-name]', function() {
         var hotelRowNumber = findCurrentRowNumber($(this));
         //скрываем скринап
         $(this).parents('.formDirections').hide();
-
         var hotelResultWrapper = $('['+tourRowAttrSelector+'="'+hotelRowNumber+'"]');
         hotelResultWrapper.find('.bth__inp-lbl').addClass('active');
         hotelResultWrapper.find('.hotel-search__cut').text( $(this).attr('data-hotel-name') );
@@ -287,7 +292,6 @@ $(document).ready(function () {
         orderData.params.order_type = findActiveTab();
         orderData.general = lsfw.bookingRequest;
         orderData.tour.items = orderTour.directions;
-
         orderData.hotels.departmentId = orderHotel.departmentId;
         orderData.hotels.meal = orderHotel.meal;
         orderData.hotels.items = orderHotel.hotels;
@@ -322,7 +326,7 @@ var setHotelMeal = function(selector, defaultCheckedValue) {
     setSumoSelect($(selector), targetInput.next().text());
 };
 
-// Принудительно корректируем ширину активного таба, если хеш
+// Принудительно корректируем ширину подчеркивания активного таба, если хеш
 // отличается от id текущего таба.
 var correctWidthUnderline = function() {
     var activeTab = $('.tour-selection-box .tabs-bar .tab.active');
@@ -572,6 +576,7 @@ setSumoSelect = function(element, name, value = 0) {
         labelSelect.addClass('active');
         textSelect.text(name);
     }
+    wrapperSelect.find('.search-txt').val('');
 };
 
 // Добавялет элемент во все выпадающие списки

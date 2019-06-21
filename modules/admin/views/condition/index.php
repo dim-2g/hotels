@@ -16,6 +16,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>
         <?= Html::a('Create Condition', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('<span class="glyphicon glyphicon-usd"></span> Заказы',
+            ['/admin'],
+            ['class' => 'btn btn-default']) ?>
+        <?= Html::a('<span class="glyphicon glyphicon-user"></span> Консультанты',
+            ['/admin/manager/index'],
+            ['class' => 'btn btn-default']) ?>
+
     </p>
 
 

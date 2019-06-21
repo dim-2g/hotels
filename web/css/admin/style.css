@@ -15,3 +15,8 @@
 .admin-box .grid-view .summary{
     margin-bottom: 8px;
 }
+
+.booking-table td{
+    max-width: 200px;
+    overflow: hidden;
+}
