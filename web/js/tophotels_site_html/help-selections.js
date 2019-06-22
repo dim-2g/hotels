@@ -178,7 +178,7 @@ $(document).ready(function () {
 //Направление
     var sumoDirection= $('select[class="sumo-direction"]');
     sumoDirection.SumoSelect({
-        search: true,
+        search: false,
         forceCustomRendering: true
     });
     sumoDirection.parent().addClass('open');

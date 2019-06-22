@@ -728,7 +728,8 @@ reinitSumoSearchFunc = function(sumoSelect){
                 e.addClass('hidden');
         }).not('.hidden');
 
-        searchText = encodeURIComponent(O.ftxt.val());
+        //searchText = encodeURIComponent(O.ftxt.val());
+        searchText = O.ftxt.val().replace('<', '').replace('>', '');
         P.html('Нет совпадений для "{0}"'.replace(/\{0\}/g, searchText)).toggle(!hid.length);
 
         O.selAllState();
