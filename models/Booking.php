@@ -13,6 +13,25 @@ use app\models\BookingDirections;
  */
 class Booking extends ActiveRecord
 {
+    /**
+     * Сценарий правил валидации для Нестандартного запроса
+     */
+    const SCENARIO_CUSTOM = 'custom';
+
+    /**
+     * Сценарий правил валидации на первом шаге сложной формы
+     */
+    const SCENARIO_FIRST_STEP = 'first_step';
+
+    /**
+     * Сценарий правил валидации для Турпакета
+     */
+    const SCENARIO_TOURS = 'tours';
+
+    /**
+     * Сценарий правил валидации для Конкретного отеля
+     */
+    const SCENARIO_HOTELS = 'hotel';
 
     public static function tableName()
     {
@@ -25,15 +44,36 @@ class Booking extends ActiveRecord
     public function rules()
     {
         return [
+
             ['parametrs', 'trim', 'message' => 'Поле "Укажите страну, курорт или отель" обязательное для заполнения'],
             ['name', 'required', 'message' => 'Поле "Ваше имя" обязательное для заполнения'],
             ['phone', 'required', 'message' => 'Поле "Телефон" обязательное для заполнения'],
             ['email', 'email', 'message' => 'Поле не соответствует формату "ххххх@xxxx.xxxx"'],
             ['manager_id', 'integer'],
+            ['type', 'trim'],
+            ['tourist_city_id', 'required', 'message' => 'Поле "Ваш город" обязательное для заполнения'],
             ['notified', 'integer']
+
         ];
     }
 
+    /**
+     * Сценарии
+     * @return array
+     */
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+
+        $scenarios[static::SCENARIO_CUSTOM] = ['parametrs', 'name', 'phone', 'email', 'type'];
+        $scenarios[static::SCENARIO_FIRST_STEP] = ['type'];
+        $scenarios[static::SCENARIO_TOURS] = ['parametrs', 'name', 'phone', 'email', 'type', 'tourist_city_id'];
+        $scenarios[static::SCENARIO_HOTELS] = ['parametrs', 'name', 'phone', 'email', 'type', 'tourist_city_id'];
+
+
+        return $scenarios;
+    }
     /*
      *
      */
@@ -52,6 +92,16 @@ class Booking extends ActiveRecord
             $this->created_at = date("Y-m-d H:i:s");
         }
         return parent::beforeSave($insert);
+    }
+
+    public function beforeDelete()
+    {
+        if (parent::beforeDelete()) {
+            $this->unlinkAll('extended', true);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

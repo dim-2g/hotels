@@ -41,7 +41,7 @@ class BookingExtended extends \yii\db\ActiveRecord
     /**
      * Сценарий правил для Конкретного отеля
      */
-    const SCENARIO_HOTELS = 'hotels';
+    const SCENARIO_HOTELS = 'hotel';
 
     /**
      * {@inheritdoc}
@@ -57,11 +57,55 @@ class BookingExtended extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['booking_id', 'date_from', 'date_to', 'night_from', 'night_to', 'adult', 'child', 'child_age_1', 'child_age_2', 'child_age_3', 'price_comfort', 'price_max', 'wish', 'tourist_city_id', 'meal'], 'required'],
-            [['booking_id', 'adult', 'child', 'child_age_1', 'child_age_2', 'child_age_3', 'price_comfort', 'price_max', 'tourist_city_id', 'meal'], 'integer'],
-            [['date_from', 'date_to', 'night_from', 'night_to', 'wish'], 'string'],
+            [['booking_id', 'date_from', 'date_to', 'night_from', 'night_to', 'adult', 'tourist_city_id', 'meal'], 'required'],
+            [['booking_id', 'adult', 'child', 'child_age_1', 'child_age_2', 'child_age_3', 'price_comfort', 'price_max', 'department_city_id'], 'integer'],
+            [['date_from', 'date_to', 'night_from', 'night_to'], 'string'],
+            [['wish', 'meal'], 'trim'],
             [['booking_id'], 'exist', 'skipOnError' => true, 'targetClass' => Booking::className(), 'targetAttribute' => ['booking_id' => 'id']],
         ];
+    }
+
+    /**
+     * Сценарии
+     * @return array
+     */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[static::SCENARIO_TOURS] = [
+            'booking_id',
+            'date_from',
+            'date_to',
+            'night_from',
+            'night_to',
+            'adult',
+            'child',
+            'child_age_1',
+            'child_age_2',
+            'child_age_3',
+            'price_comfort',
+            'price_max',
+            'wish',
+        ];
+        $scenarios[static::SCENARIO_HOTELS] = [
+            'booking_id',
+            'date_from',
+            'date_to',
+            'night_from',
+            'night_to',
+            'adult',
+            'child',
+            'child_age_1',
+            'child_age_2',
+            'child_age_3',
+            'price_comfort',
+            'price_max',
+            'wish',
+            'department_city_id',
+            'meal'
+        ];
+
+        return $scenarios;
     }
 
     /**
@@ -84,7 +128,7 @@ class BookingExtended extends \yii\db\ActiveRecord
             'price_comfort' => 'Бюджет комфортный',
             'price_max' => 'Бюджет максимальный',
             'wish' => 'Пожелания',
-            'tourist_city_id' => 'ID города туриста',
+            'department_city_id' => 'ID города вылета',
             'meal' => 'Питание',
         ];
     }

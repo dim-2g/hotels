@@ -102,7 +102,10 @@ class SiteController extends Controller
 
     public function actionBooking()
     {
-        $booking = Booking::find()->where(['id' => 114])->one();
+        //$booking = Booking::find()->where(['id' => 114])->one();
+        $booking = Booking::find()->where(['id' => 172])->one();
+        $booking->delete();
+        die();
         debug($booking->extended->date_from);
         foreach ($booking->directions as $direction) {
             if ($direction->countryProfile) {

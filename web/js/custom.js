@@ -6,6 +6,7 @@ var selectorTouristCity = '#sumo-list-city';
 var fieldSelectorsComplexForm = {
     'order_id': '.order-form__step-2 [name="order_id"]',
     'tourist_city': '.order-form__step-2 [name="tourist_city"]',
+    'tourist_city_id': '.order-form__step-2 [name="tourist_city_id"]',
     'name': '.order-form__step-2 #name3',
     'phone': '.order-form__step-2 #phone3',
     'email': '.order-form__step-2 #mail2'
@@ -39,7 +40,7 @@ var orderTour = {
 
 var orderHotel = {
     departmentId: '',
-    meal: [],
+    meal: ['any'],
     hotels: [],
     addHotelParam: function(index, key, value) {
         if (this.hotels[index]) {
@@ -68,7 +69,7 @@ $(document).ready(function () {
     setSumoSelect($(selectorDirectionCity), 'не важно');
     setSumoSelect($(selectorDepartmentCity), 'без перелета');
     //устанавливаем значение Любое для поля Питание
-    setHotelMeal('.js-types-search-hotel-blocks [name="meal[]"]', 'any');
+    setHotelMeal('.js-types-search-hotel-blocks [name="meal[]"]', orderHotel.meal[0]);
     //загружаем список стран
     initDirectionSelect();
     //загружаем города вылета
@@ -128,7 +129,7 @@ $(document).ready(function () {
         var cityName = $(this).find('option:selected').text().trim();
         //визуально показываем какой город выбран
         setSumoSelect($(this), cityName, cityId);
-        $(fieldSelectorsComplexForm.tourist_city).val(cityId);
+        $(fieldSelectorsComplexForm.tourist_city_id).val(cityId);
     });
 
     //при клике на городе вылета
@@ -303,7 +304,7 @@ $(document).ready(function () {
         e.preventDefault();
         var data = {};
         data.order_id = $(fieldSelectorsComplexForm.order_id).val();
-        data.tourist_city = $(fieldSelectorsComplexForm.tourist_city).val();
+        data.tourist_city_id = $(fieldSelectorsComplexForm.tourist_city_id).val();
         data.name = $(fieldSelectorsComplexForm.name).val();
         data.phone = $(fieldSelectorsComplexForm.phone).val();
         data.email = $(fieldSelectorsComplexForm.email).val();

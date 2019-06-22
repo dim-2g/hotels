@@ -2,12 +2,15 @@
 
 namespace app\controllers;
 
-use app\models\AlloccatDictionary;
-use app\models\AllocPlaceTypeDictionary;
-use app\models\AllocPlaceValueDictionary;
-use app\models\CityDictionary;
-use app\models\CountryDictionary;
-use app\models\HotelDictionary;
+use app\models\BookingDirections;
+use app\models\BookingHotels;
+use app\models\BookingExtended;
+use app\models\Dictionary\AlloccatDictionary;
+use app\models\Dictionary\AllocPlaceTypeDictionary;
+use app\models\Dictionary\AllocPlaceValueDictionary;
+use app\models\Dictionary\CityDictionary;
+use app\models\Dictionary\CountryDictionary;
+use app\models\Dictionary\HotelDictionary;
 use app\modules\admin\models\Condition;
 use app\modules\admin\models\Manager;
 use Yii;
@@ -109,33 +112,172 @@ class BookingController extends Controller
             'errors' => [],
             'data' => [],
         ];
+        $errors = [];
 
         $post = Yii::$app->request->post();
-        $orderData = [];
-        $orderData['name'] = 'не указано';
-        $orderData['phone'] = 'не указано';
-        $orderData['tourist_city'] = 'не указано';
-        $orderData['date_departure'] = self::prepareDateDeparture($post);
-        $orderData['persons'] = self::preparePersons($post);
-        $orderData['budget'] = self::prepareBudget($post);
-        $orderData['parametrs'] = self::prepareDirection($post);
-        $orderData['wish'] = self::prepareWish($post);
-        //в это поле сохраним весь массив
-        $orderData['raw_data'] = json_encode($post);
-        $managerId = self::findRightManager($post);
-        $orderData['manager_id'] = $managerId ? $managerId : '';
+        $orderData = self::findFieldsFromPost($post);
+        $scenario = self::findScenario($post);
+        $orderData['type'] = $scenario;
 
-        $booking = new BookingExt();
-        if ($booking->load($orderData, '')) {
-            if ($booking->validate()) {
-                $booking->save();
-                $response['success'] = true;
-                $response['data']['id'] = $booking->id;
-            } else {
-                $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
+        $booking = new Booking(['scenario' => Booking::SCENARIO_FIRST_STEP]);
+        $bookingExtended = new BookingExtended(['scenario' => $scenario]);
+/*
+        $transaction = Booking::getDb()->beginTransaction();
+        try {
+*/
+            /*
+             * сохраняем простую форму, чтобы получить id для связи с расширенной, а также
+             * дальнейшего заполнения на втором шаге
+             */
+            if ($booking->load($orderData, '')) {
+                if ($booking->validate()) {
+                    $booking->save();
+                    $response['data']['id'] = $booking->id;
+                }
+            }
+            $errors['simple'] = $booking->getErrors();
+            /*
+             * Сохраняем расширенную форму
+             */
+            if (!empty($booking->id)) {
+                $orderData['booking_id'] = $booking->id;
+                if ($bookingExtended->load($orderData, '')) {
+                    if ($bookingExtended->validate()) {
+                        $bookingExtended->save();
+                        //$transaction->commit();
+                    }
+                }
+                $errors['extended'] = $bookingExtended->getErrors();
+            }
+            /*
+             * Если форма содержит Направления, сохраняем их
+             */
+            if (self::hasTours($post) && !empty($booking->id)) {
+                foreach ($post['tour']['items'] as $iter => $item) {
+                    if (empty($item['active'])) continue;
+                    $direction = new BookingDirections();
+                    $orderDirections = self::findFieldsForDirections($item);
+                    $orderDirections['booking_id'] = $booking->id;
+                    if ($direction->load($orderDirections, '')) {
+                        if ($direction->validate()) {
+                            $direction->save();
+                        }
+                    }
+                    $errors['direction_' . $iter] = $direction->getErrors();
+                }
+            }
+            /*
+             * Если форма содержит Направления, сохраняем их
+             */
+            if (self::hasHotels($post)  && !empty($booking->id)) {
+                foreach ($post['hotels']['items'] as $iter => $item) {
+                    if (empty($item['active'])) continue;
+                    $hotels = new BookingHotels();
+                    $orderHotels = self::findFieldsForHotels($item);
+                    $orderHotels['booking_id'] = $booking->id;
+                    if ($hotels->load($orderHotels, '')) {
+                        if ($hotels->validate()) {
+                            $hotels->save();
+                        }
+                    }
+                    $errors['hotels_' . $iter] = $hotels->getErrors();
+                }
+            }
+/*
+        } catch (\Exception $e) {
+            $response['data'] = [];
+            $transaction->rollBack();
+        }
+*/
+        foreach ($errors as $blockError) {
+            if (count($blockError) > 0) {
+                $response['errors'] = array_merge(
+                    $response['errors'],
+                    BookingHelper::prepareErrorsAjaxForm($blockError)
+                );
             }
         }
+        if (count($response['errors']) == 0) {
+            $response['success'] = true;
+        }
+
         return json_encode($response);
+    }
+
+    /**
+     * @return string
+     */
+    public static function findScenario($postData)
+    {
+        if (!empty($postData['params']['order_type'])) {
+            if ($postData['params']['order_type'] == 'tours') {
+                return BookingExtended::SCENARIO_TOURS;
+            }
+            if ($postData['params']['order_type'] == 'hotel') {
+                return BookingExtended::SCENARIO_HOTELS;
+            }
+        }
+
+        return 'default';
+    }
+
+    public static function findFieldsForDirections($post)
+    {
+        $orderDirections = [];
+        $orderDirections['country_id'] = (!empty($post['countryId'])) ? $post['countryId'] : null;
+        $orderDirections['city_id'] = (!empty($post['cityId'])) ? $post['cityId'] : null;
+        $orderDirections['department_city_id'] = (!empty($post['departmentId'])) ? $post['departmentId'] : null;
+        $orderDirections['params'] = '!!!!!!!!!!';
+
+        return $orderDirections;
+    }
+
+    /**
+     * @return array
+     */
+    public static function findFieldsForHotels($post)
+    {
+        $orderHotels = [];
+        $orderHotels['hotel_id'] = (!empty($post['hotelId'])) ? $post['hotelId'] : null;
+
+        return $orderHotels;
+    }
+
+    public static function findFieldsFromPost($post)
+    {
+        $orderData = [];
+        $orderData['date_from'] = self::findFieldByKeys($post, 'general', 'df');
+        $orderData['date_to'] = self::findFieldByKeys($post, 'general', 'dt');
+        $orderData['night_from'] = self::findFieldByKeys($post, 'general', 'nf');
+        $orderData['night_to'] = self::findFieldByKeys($post, 'general', 'nt');
+        $orderData['adult'] = self::findFieldByKeys($post, 'general', 'ad');
+        $orderData['child'] = self::findFieldByKeys($post, 'general', 'ch');
+        $orderData['child_age_1'] = self::findFieldByKeys($post, 'general', 'ch1');
+        $orderData['child_age_2'] = self::findFieldByKeys($post, 'general', 'ch2');
+        $orderData['child_age_3'] = self::findFieldByKeys($post, 'general', 'ch3');
+        $orderData['price_comfort'] = self::findFieldByKeys($post, 'general', 'pc');
+        $orderData['price_max'] = self::findFieldByKeys($post, 'general', 'pt');
+        $orderData['wish'] = self::findFieldByKeys($post, 'params', 'wish');
+        $orderData['department_city_id'] = self::findFieldByKeys($post, 'hotels', 'departmentId');
+        if (!empty($post['hotels']['meal'])) {
+            $orderData['meal'] = implode(',', $post['hotels']['meal']);
+        }
+
+        return $orderData;
+    }
+
+    public static function findFieldByKeys($postData, $keyParentArray, $keyChildArray)
+    {
+        if (isset($postData[$keyParentArray][$keyChildArray])) {
+            return $postData[$keyParentArray][$keyChildArray];
+        } else {
+            return '';
+        }
+    }
+
+    public static function findFieldDateFrom($postData)
+    {
+        return $postData['general']['df'];
     }
 
     /*
@@ -149,6 +291,26 @@ class BookingController extends Controller
             'data' => [],
         ];
         $post = Yii::$app->request->post();
+        $booking = Booking::findOne($post['order_id']);
+        $booking->scenario = $booking->type;
+        $booking->name = $post['name'];
+        $booking->phone = $post['phone'];
+        $booking->email = $post['email'];
+        $booking->tourist_city_id = $post['tourist_city_id'];
+
+        if ($booking->validate()) {
+            $booking->save();
+            $response['data']['id'] = $booking->id;
+            $response['success'] = true;
+        }
+
+        if (!$response['success']) {
+            $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
+        }
+
+        return json_encode($response);
+
+
         if (!empty($post['tourist_city'])) {
             $post['tourist_city'] = self::findCityNameById($post['tourist_city']);
         } else {
@@ -541,6 +703,7 @@ class BookingController extends Controller
 
         return false;
     }
+
 
     /*
      * Преобразуем данные для поля Дата вылета

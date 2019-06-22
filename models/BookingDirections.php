@@ -34,8 +34,9 @@ class BookingDirections extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['booking_id', 'country_id', 'city_id', 'department_city_id', 'params'], 'required'],
-            [['booking_id', 'country_id', 'city_id', 'department_city_id', 'params'], 'integer'],
+            [['booking_id'], 'required'],
+            [['booking_id', 'country_id', 'city_id', 'department_city_id'], 'integer'],
+            [['params'], 'safe'],
             [['booking_id'], 'exist', 'skipOnError' => true, 'targetClass' => Booking::className(), 'targetAttribute' => ['booking_id' => 'id']],
         ];
     }

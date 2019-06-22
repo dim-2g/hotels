@@ -862,7 +862,7 @@ $this->title = 'TopHotels';
                                     <p class="bth__cnt">Поле не должно быть пустым</p>
                                 </div>
                             </div>
-                            <input value="" type="hidden" class="" id="" name="tourist_city" placeholder="">
+                            <input value="" type="hidden" class="" id="" name="tourist_city_id" placeholder="">
                         </div>
                         <div class="formDirections w100p">
                             <div class="formDirections__wrap w100p">
