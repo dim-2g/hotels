@@ -16,7 +16,7 @@ class ResortDictionary extends AppDictionary
         return 'dict.dict_resort';
     }
 
-    public function getCountry()
+    public function getCountryProfile()
     {
         return $this->hasOne(CountryDictionary::className(), ['id' => 'country']);
     }

@@ -18,12 +18,12 @@ class HotelDictionary extends AppDictionary
         return 'dict.dict_allocation';
     }
 
-    public function getResort()
+    public function getResortProfile()
     {
         return $this->hasOne(ResortDictionary::className(), ['id' => 'resort']);
     }
 
-    public function getCategory()
+    public function getCategoryProfile()
     {
         return $this->hasOne(AlloccatDictionary::className(), ['id' => 'cat']);
     }
