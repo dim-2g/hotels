@@ -1,13 +1,13 @@
 <?php
 
-namespace app\models;
+namespace app\models\Dictionary;
 
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
-use app\models\AppDictionary;
-use app\models\ResortDictionary;
-use app\models\AlloccatDictionary;
+use app\models\Dictionary\AppDictionary;
+use app\models\Dictionary\ResortDictionary;
+use app\models\Dictionary\AlloccatDictionary;
 use PDO;
 
 class HotelDictionary extends AppDictionary
@@ -18,12 +18,12 @@ class HotelDictionary extends AppDictionary
         return 'dict.dict_allocation';
     }
 
-    public function getResort()
+    public function getResortProfile()
     {
         return $this->hasOne(ResortDictionary::className(), ['id' => 'resort']);
     }
 
-    public function getCategory()
+    public function getCategoryProfile()
     {
         return $this->hasOne(AlloccatDictionary::className(), ['id' => 'cat']);
     }

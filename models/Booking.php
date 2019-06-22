@@ -5,6 +5,8 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
+use app\models\BookingHotels;
+use app\models\BookingDirections;
 
 /**
  * BookingForm is the model behind the contact form.
@@ -50,6 +52,30 @@ class Booking extends ActiveRecord
             $this->created_at = date("Y-m-d H:i:s");
         }
         return parent::beforeSave($insert);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getHotels()
+    {
+        return $this->hasMany(BookingHotels::className(), ['booking_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getDirections()
+    {
+        return $this->hasMany(BookingDirections::className(), ['booking_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getExtended()
+    {
+        return $this->hasOne(BookingExtended::className(), ['booking_id' => 'id']);
     }
 
 }

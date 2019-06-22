@@ -68,6 +68,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     },
                     'format' => 'raw'
             ],
+            [
+                    'attribute' => 'date_from',
+                    'value' => function($data) {
+                        return $data->extended->date_from;
+                    },
+            ]
         ],
     ]) ?>
 

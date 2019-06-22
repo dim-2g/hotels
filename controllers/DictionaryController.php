@@ -5,10 +5,9 @@ namespace app\controllers;
 use app\helpers\BookingHelper;
 use Yii;
 use yii\web\Controller;
-use app\models\CountryDictionary;
-use app\models\CityDictionary;
-use app\models\HotelDictionary;
-
+use app\models\Dictionary\CountryDictionary;
+use app\models\Dictionary\CityDictionary;
+use app\models\Dictionary\HotelDictionary;
 
 class DictionaryController extends Controller
 {

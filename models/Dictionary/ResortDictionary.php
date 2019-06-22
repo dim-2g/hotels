@@ -1,12 +1,12 @@
 <?php
 
-namespace app\models;
+namespace app\models\Dictionary;
 
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
-use app\models\AppDictionary;
-use app\models\CountryDictionary;
+use app\models\Dictionary\AppDictionary;
+use app\models\Dictionary\CountryDictionary;
 
 class ResortDictionary extends AppDictionary
 {
@@ -16,7 +16,7 @@ class ResortDictionary extends AppDictionary
         return 'dict.dict_resort';
     }
 
-    public function getCountry()
+    public function getCountryProfile()
     {
         return $this->hasOne(CountryDictionary::className(), ['id' => 'country']);
     }

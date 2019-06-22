@@ -7,6 +7,7 @@ return [
     'username' => 'dict_reader',
     'password' => 'dict_reader',
     'charset' => 'utf8',
+    'enableSchemaCache' => true,
     'schemaMap' => [
         'pgsql' => [
             'class' => 'yii\db\pgsql\Schema',

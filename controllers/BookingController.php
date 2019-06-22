@@ -19,6 +19,10 @@ use app\helpers\BookingHelper;
 
 class BookingController extends Controller
 {
+    /*
+     * Данные для Валют
+     * В базе postgre нет этих данных. В своей базе не стал заводить
+     */
     public static $currency = [
         0 => 'р.',
         1 => 'дол.',
@@ -29,6 +33,10 @@ class BookingController extends Controller
         6 => 'тен.',
     ];
 
+    /*
+     * Данные для Параметры отеля - Детское
+     * В базе postgre нет этих данных. В своей базе не стал заводить
+     */
     public static $childrenParams = [
         'potty' => 'Детский горшок',
         'meal' => 'Детские блюда',
@@ -36,6 +44,10 @@ class BookingController extends Controller
         'animation' => 'Анимация',
     ];
 
+    /*
+     * Данные для Параметры отеля - Прочее
+     * В базе postgre нет этих данных. В своей базе не стал заводить
+     */
     public static $otherParams = [
         'animation' => 'Веселая анимация',
         'parties' => 'Тусовки рядом с отелем',
