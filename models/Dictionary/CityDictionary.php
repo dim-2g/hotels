@@ -1,11 +1,11 @@
 <?php
 
-namespace app\models;
+namespace app\models\Dictionary;
 
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
-use app\models\AppDictionary;
+use app\models\Dictionary\AppDictionary;
 
 class CityDictionary extends AppDictionary
 {

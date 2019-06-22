@@ -1,12 +1,12 @@
 <?php
 
-namespace app\models;
+namespace app\models\Dictionary;
 
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
-use app\models\AppDictionary;
-use app\models\AllocPlaceTypeDictionary;
+use app\models\Dictionary\AppDictionary;
+use app\models\Dictionary\AllocPlaceTypeDictionary;
 
 class AllocPlaceValueDictionary extends AppDictionary
 {
