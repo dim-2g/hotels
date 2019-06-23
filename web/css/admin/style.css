@@ -8,6 +8,12 @@
     font-weight: bold;
 }
 
+.admin-box h2{
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
 .admin-box p{
     margin-bottom: 15px;
 }

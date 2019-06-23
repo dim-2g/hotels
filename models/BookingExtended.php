@@ -133,6 +133,7 @@ class BookingExtended extends \yii\db\ActiveRecord
             'wish' => 'Пожелания',
             'department_city_id' => 'ID города вылета',
             'meal' => 'Питание',
+            'currency' => 'Валюта',
         ];
     }
 

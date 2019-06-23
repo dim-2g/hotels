@@ -50,10 +50,10 @@ class BookingDirections extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'booking_id' => 'Booking ID',
-            'country_id' => 'Country ID',
-            'city_id' => 'City ID',
-            'department_city_id' => 'Department City ID',
-            'params' => 'Params',
+            'country_id' => 'Страна',
+            'city_id' => 'Город',
+            'department_city_id' => 'Город отправления',
+            'params' => 'Параметры отеля',
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace app\modules\admin\controllers;
 
+use app\models\BookingDirections;
 use Yii;
 //use app\modules\admin\models\Booking;
 use app\models\Booking;
@@ -61,8 +62,19 @@ class BookingController extends Controller
      */
     public function actionView($id)
     {
+        $bookingExtended = $this->findModel($id)->extended;
+        $bookingDirections = $this->findModel($id)->directions;
+        /*$bookingDirections = new ActiveDataProvider([
+            'query' => BookingDirections::find()->where(['booking_id' => $id]),
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+        ]);*/
+
         return $this->render('view', [
             'model' => $this->findModel($id),
+            'extended' => $bookingExtended,
+            'directions' => $bookingDirections,
         ]);
     }
 
