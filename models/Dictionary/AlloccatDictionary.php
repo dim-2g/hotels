@@ -15,4 +15,10 @@ class AlloccatDictionary extends AppDictionary
         return 'dict.dict_alloccat';
     }
 
+    public function getValue()
+    {
+        $value = trim(str_replace('*', '', $this->name));
+        return $value;
+    }
+
 }

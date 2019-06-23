@@ -2,11 +2,13 @@
 
 namespace app\models;
 
+use app\models\BookingDirections;
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
 use app\models\BookingHotels;
-use app\models\BookingDirections;
+use app\models\Params;
+
 
 /**
  * BookingForm is the model behind the contact form.
@@ -31,7 +33,9 @@ class Booking extends ActiveRecord
     /**
      * Сценарий правил валидации для Конкретного отеля
      */
-    const SCENARIO_HOTELS = 'hotel';
+    const SCENARIO_HOTELS = 'hotels';
+
+    public $booking_params = 'booking_params';
 
     public static function tableName()
     {
@@ -98,6 +102,7 @@ class Booking extends ActiveRecord
     {
         if (parent::beforeDelete()) {
             $this->unlinkAll('extended', true);
+            $this->unlinkAll('params', true);
             return true;
         } else {
             return false;
@@ -118,6 +123,14 @@ class Booking extends ActiveRecord
     public function getDirections()
     {
         return $this->hasMany(BookingDirections::className(), ['booking_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getParams()
+    {
+        return $this->hasMany(Params::className(), ['entity' => $this->booking_params, 'entity_id' => 'id']);
     }
 
     /**

@@ -15,4 +15,18 @@ class CountryDictionary extends AppDictionary
         return 'dict.dict_country';
     }
 
+    /**
+     * Находит название страны по id
+     * @param $id
+     * @return mixed
+     */
+    public static function findName($id)
+    {
+        if ($res = self::find()->where(['id' => $id])->one()){
+            return $res->name;
+        }
+
+        return $id;
+    }
+
 }

@@ -3,8 +3,8 @@
 namespace app\models;
 
 use Yii;
-use \app\models\CountryDictionary;
-use \app\models\CityDictionary;
+use \app\models\Dictionary\CountryDictionary;
+use \app\models\Dictionary\CityDictionary;
 
 /**
  * This is the model class for table "booking_directions".
@@ -20,6 +20,7 @@ use \app\models\CityDictionary;
  */
 class BookingDirections extends \yii\db\ActiveRecord
 {
+    public $booking_directions = 'booking_directions';
     /**
      * {@inheritdoc}
      */
@@ -86,5 +87,99 @@ class BookingDirections extends \yii\db\ActiveRecord
     public function getDepartmentCityProfile()
     {
         return $this->hasOne(CityDictionary::className(), ['id' => 'department_city_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getParams()
+    {
+        return $this->hasMany(Params::className(), ['entity' => $this->booking_directions, 'entity_id' => 'id']);
+    }
+
+    /**
+     * Получение параметров отеля по ключу
+     * @param $key - ключ для АР Params
+     * @return mixed
+     */
+    public function getTourParams($key)
+    {
+        return $this->getParams()->andWhere(['category' => $key])->all();
+    }
+
+    /**
+     * Питание в параметрах отеля
+     * @return mixed
+     */
+    public function getMeals()
+    {
+        return $this->getTourParams('tour_meal');
+    }
+
+    /**
+     * Категория отеля в параметрах отеля
+     * @return mixed
+     */
+    public function getCategories()
+    {
+        return $this->getTourParams('tour_category');
+    }
+
+    /**
+     * Получение параметров отеля по рейтингу
+     * @return string
+     */
+    public function getRating()
+    {
+        return $this->getTourParams('tour_rating');
+    }
+
+    /**
+     * Получение параметров расположения отеля
+     * @return string
+     */
+    public function getPlace()
+    {
+        return $this->getTourParams('tour_place');
+    }
+
+    public function getForBaby()
+    {
+        return $this->getTourParams('tour_baby');
+    }
+
+    public function getOther()
+    {
+        return $this->getTourParams('tour_other');
+    }
+
+    public function getPlaceCategory()
+    {
+        $place = $this->getParams()->andWhere(['category' => 'tour_place'])->one();
+        $placeCategory = explode('_', $place->value);
+        $place->category = 'tour_place_category';
+        $place->value = $placeCategory[0];
+        return $place;
+    }
+
+    public function findValue($key)
+    {
+        switch ($key) {
+            case 'country_id':
+                return $this->country_id;
+                break;
+            case 'city_id':
+                return $this->city_id;
+                break;
+            case 'alloccat_id':
+                $output = [];
+                if (!empty($this->categories)) {
+                    foreach ($this->categories as $category) {
+                        $output[] = $category->value;
+                    }
+                }
+                return $output;
+                break;
+        }
     }
 }

@@ -64,4 +64,18 @@ class BookingHelper{
         return $flagFileName;
     }
 
+    /**
+     * Проверяет на соответствие два значения
+     * Если второе массив, то ищет хотя бы одно совпадение
+     * @return string
+     */
+    public static function isEqual($conditionValue, $targetValue)
+    {
+        if (is_array($targetValue)) {
+            return in_array($conditionValue, $targetValue);
+        } else {
+            return $conditionValue == $targetValue;
+        }
+    }
+
 }

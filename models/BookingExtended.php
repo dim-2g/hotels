@@ -41,7 +41,7 @@ class BookingExtended extends \yii\db\ActiveRecord
     /**
      * Сценарий правил для Конкретного отеля
      */
-    const SCENARIO_HOTELS = 'hotel';
+    const SCENARIO_HOTELS = 'hotels';
 
     /**
      * {@inheritdoc}
@@ -57,10 +57,10 @@ class BookingExtended extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['booking_id', 'date_from', 'date_to', 'night_from', 'night_to', 'adult', 'tourist_city_id', 'meal'], 'required'],
-            [['booking_id', 'adult', 'child', 'child_age_1', 'child_age_2', 'child_age_3', 'price_comfort', 'price_max', 'department_city_id'], 'integer'],
+            [['booking_id', 'date_from', 'date_to', 'night_from', 'night_to', 'adult', 'tourist_city_id'], 'required'],
+            [['booking_id', 'adult', 'child', 'child_age_1', 'child_age_2', 'child_age_3', 'price_comfort', 'price_max', 'currency', 'department_city_id'], 'integer'],
             [['date_from', 'date_to', 'night_from', 'night_to'], 'string'],
-            [['wish', 'meal'], 'trim'],
+            [['wish'], 'trim'],
             [['booking_id'], 'exist', 'skipOnError' => true, 'targetClass' => Booking::className(), 'targetAttribute' => ['booking_id' => 'id']],
         ];
     }
@@ -85,6 +85,7 @@ class BookingExtended extends \yii\db\ActiveRecord
             'child_age_3',
             'price_comfort',
             'price_max',
+            'currency',
             'wish',
         ];
         $scenarios[static::SCENARIO_HOTELS] = [
@@ -100,9 +101,9 @@ class BookingExtended extends \yii\db\ActiveRecord
             'child_age_3',
             'price_comfort',
             'price_max',
+            'currency',
             'wish',
             'department_city_id',
-            'meal'
         ];
 
         return $scenarios;

@@ -15,4 +15,18 @@ class CityDictionary extends AppDictionary
         return 'dict.dict_city';
     }
 
+    /**
+     * Находит название города по id
+     * @param $id
+     * @return mixed
+     */
+    public static function findName($id)
+    {
+        if ($res = self::find()->where(['id' => $id])->one()){
+            return $res->name;
+        }
+
+        return $id;
+    }
+
 }

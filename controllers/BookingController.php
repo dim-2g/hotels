@@ -11,13 +11,13 @@ use app\models\Dictionary\AllocPlaceValueDictionary;
 use app\models\Dictionary\CityDictionary;
 use app\models\Dictionary\CountryDictionary;
 use app\models\Dictionary\HotelDictionary;
+use app\models\Params;
 use app\modules\admin\models\Condition;
 use app\modules\admin\models\Manager;
 use Yii;
 use yii\helpers\Url;
 use yii\web\Controller;
 use app\models\Booking;
-use app\models\BookingExt;
 use app\helpers\BookingHelper;
 
 class BookingController extends Controller
@@ -115,12 +115,13 @@ class BookingController extends Controller
         $errors = [];
 
         $post = Yii::$app->request->post();
+
         $orderData = self::findFieldsFromPost($post);
         $scenario = self::findScenario($post);
         $orderData['type'] = $scenario;
 
         $booking = new Booking(['scenario' => Booking::SCENARIO_FIRST_STEP]);
-        $bookingExtended = new BookingExtended(['scenario' => $scenario]);
+
 /*
         $transaction = Booking::getDb()->beginTransaction();
         try {
@@ -141,6 +142,7 @@ class BookingController extends Controller
              */
             if (!empty($booking->id)) {
                 $orderData['booking_id'] = $booking->id;
+                $bookingExtended = new BookingExtended(['scenario' => $scenario]);
                 if ($bookingExtended->load($orderData, '')) {
                     if ($bookingExtended->validate()) {
                         $bookingExtended->save();
@@ -164,10 +166,29 @@ class BookingController extends Controller
                         }
                     }
                     $errors['direction_' . $iter] = $direction->getErrors();
+                    /*
+                     * Запишем параметры выбранного направления
+                     */
+                    if (!empty($direction->id)) {
+                        if (!empty($item['params'])){
+                            foreach ($item['params'] as $paramCategory => $paramValues) {
+                                foreach ($paramValues as $value) {
+                                    $param = new Params();
+                                    $param->entity = 'booking_directions';
+                                    $param->entity_id = $direction->id;
+                                    $param->category = $paramCategory;
+                                    $param->value = $value;
+                                    if ($param->validate()) {
+                                        $param->save();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             /*
-             * Если форма содержит Направления, сохраняем их
+             * Если форма содержит Отели, сохраняем их
              */
             if (self::hasHotels($post)  && !empty($booking->id)) {
                 foreach ($post['hotels']['items'] as $iter => $item) {
@@ -182,13 +203,37 @@ class BookingController extends Controller
                     }
                     $errors['hotels_' . $iter] = $hotels->getErrors();
                 }
+
+                /*
+                 * Запишем данные по питанию
+                 */
+                if (!empty($booking->id)) {
+                    if (!empty($post['hotels']['meal'])) {
+                        foreach ($post['hotels']['meal'] as $value) {
+                            $param = new Params();
+                            $param->entity = 'hotel_meal';
+                            $param->entity_id = $booking->id;
+                            $param->category = 'hotel_meal';
+                            $param->value = $value;
+                            if ($param->validate()) {
+                                $param->save();
+                            }
+                        }
+                    }
+                }
+
             }
+
+            //определим менеджера по заявке
+            $booking->manager_id = self::findManagerToOrder($booking);
+            $booking->save();
 /*
         } catch (\Exception $e) {
             $response['data'] = [];
             $transaction->rollBack();
         }
 */
+
         foreach ($errors as $blockError) {
             if (count($blockError) > 0) {
                 $response['errors'] = array_merge(
@@ -205,83 +250,9 @@ class BookingController extends Controller
     }
 
     /**
-     * @return string
-     */
-    public static function findScenario($postData)
-    {
-        if (!empty($postData['params']['order_type'])) {
-            if ($postData['params']['order_type'] == 'tours') {
-                return BookingExtended::SCENARIO_TOURS;
-            }
-            if ($postData['params']['order_type'] == 'hotel') {
-                return BookingExtended::SCENARIO_HOTELS;
-            }
-        }
-
-        return 'default';
-    }
-
-    public static function findFieldsForDirections($post)
-    {
-        $orderDirections = [];
-        $orderDirections['country_id'] = (!empty($post['countryId'])) ? $post['countryId'] : null;
-        $orderDirections['city_id'] = (!empty($post['cityId'])) ? $post['cityId'] : null;
-        $orderDirections['department_city_id'] = (!empty($post['departmentId'])) ? $post['departmentId'] : null;
-        $orderDirections['params'] = '!!!!!!!!!!';
-
-        return $orderDirections;
-    }
-
-    /**
-     * @return array
-     */
-    public static function findFieldsForHotels($post)
-    {
-        $orderHotels = [];
-        $orderHotels['hotel_id'] = (!empty($post['hotelId'])) ? $post['hotelId'] : null;
-
-        return $orderHotels;
-    }
-
-    public static function findFieldsFromPost($post)
-    {
-        $orderData = [];
-        $orderData['date_from'] = self::findFieldByKeys($post, 'general', 'df');
-        $orderData['date_to'] = self::findFieldByKeys($post, 'general', 'dt');
-        $orderData['night_from'] = self::findFieldByKeys($post, 'general', 'nf');
-        $orderData['night_to'] = self::findFieldByKeys($post, 'general', 'nt');
-        $orderData['adult'] = self::findFieldByKeys($post, 'general', 'ad');
-        $orderData['child'] = self::findFieldByKeys($post, 'general', 'ch');
-        $orderData['child_age_1'] = self::findFieldByKeys($post, 'general', 'ch1');
-        $orderData['child_age_2'] = self::findFieldByKeys($post, 'general', 'ch2');
-        $orderData['child_age_3'] = self::findFieldByKeys($post, 'general', 'ch3');
-        $orderData['price_comfort'] = self::findFieldByKeys($post, 'general', 'pc');
-        $orderData['price_max'] = self::findFieldByKeys($post, 'general', 'pt');
-        $orderData['wish'] = self::findFieldByKeys($post, 'params', 'wish');
-        $orderData['department_city_id'] = self::findFieldByKeys($post, 'hotels', 'departmentId');
-        if (!empty($post['hotels']['meal'])) {
-            $orderData['meal'] = implode(',', $post['hotels']['meal']);
-        }
-
-        return $orderData;
-    }
-
-    public static function findFieldByKeys($postData, $keyParentArray, $keyChildArray)
-    {
-        if (isset($postData[$keyParentArray][$keyChildArray])) {
-            return $postData[$keyParentArray][$keyChildArray];
-        } else {
-            return '';
-        }
-    }
-
-    public static function findFieldDateFrom($postData)
-    {
-        return $postData['general']['df'];
-    }
-
-    /*
-     * Добавляем данные к существующему заказу
+     * Второй шаг созранения комплексной формы.
+     * Запоняем данными о пользователе
+     * @return false|string
      */
     public function actionStoreAdd()
     {
@@ -309,29 +280,102 @@ class BookingController extends Controller
         }
 
         return json_encode($response);
+    }
 
-
-        if (!empty($post['tourist_city'])) {
-            $post['tourist_city'] = self::findCityNameById($post['tourist_city']);
-        } else {
-            $post['tourist_city'] = '';
-        }
-        $booking = BookingExt::findOne($post['order_id']);
-        $booking->tourist_city = $post['tourist_city'];
-        $booking->name = $post['name'];
-        $booking->phone = $post['phone'];
-        $booking->email = $post['email'];
-        $savedRawData = json_decode($booking->raw_data, true);
-        $savedRawData = array_merge($savedRawData, $post);
-        $booking->raw_data = json_encode($savedRawData);
-        if ($booking->validate()) {
-            $booking->save();
-            $response['success'] = true;
-        } else {
-            $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
+    /**
+     * Поиск сценария для валидации нужных полей
+     * @return string
+     */
+    public static function findScenario($postData)
+    {
+        if (!empty($postData['params']['order_type'])) {
+            if ($postData['params']['order_type'] == 'tours') {
+                return BookingExtended::SCENARIO_TOURS;
+            }
+            if ($postData['params']['order_type'] == 'hotel') {
+                return BookingExtended::SCENARIO_HOTELS;
+            }
         }
 
-        return json_encode($response);
+        return 'default';
+    }
+
+    /**
+     * Получение данных для заполнения направления
+     * Ищем id страны, id города, id города вылета
+     * @param $post - POST данные с формы
+     * @return array
+     */
+    public static function findFieldsForDirections($post)
+    {
+        $orderDirections = [];
+        $orderDirections['country_id'] = (!empty($post['countryId'])) ? $post['countryId'] : null;
+        $orderDirections['city_id'] = (!empty($post['cityId'])) ? $post['cityId'] : null;
+        $orderDirections['department_city_id'] = (!empty($post['departmentId'])) ? $post['departmentId'] : null;
+
+        return $orderDirections;
+    }
+
+    /**
+     * Получение данных для заполнения данных по отелям.
+     * Ищем id отеля
+     * @param $post - POST данные с формы
+     * @return array
+     */
+    public static function findFieldsForHotels($post)
+    {
+        $orderHotels = [];
+        $orderHotels['hotel_id'] = (!empty($post['hotelId'])) ? $post['hotelId'] : null;
+
+        return $orderHotels;
+    }
+
+    /**
+     * Получение данных для запонения расширенной формы
+     * @param $post
+     * @return array
+     */
+    public static function findFieldsFromPost($post)
+    {
+        $orderData = [];
+        $orderData['date_from'] = self::findFieldByKeys($post, 'general', 'df');
+        $orderData['date_to'] = self::findFieldByKeys($post, 'general', 'dt');
+        $orderData['night_from'] = self::findFieldByKeys($post, 'general', 'nf');
+        $orderData['night_to'] = self::findFieldByKeys($post, 'general', 'nt');
+        $orderData['adult'] = self::findFieldByKeys($post, 'general', 'ad');
+        $orderData['child'] = self::findFieldByKeys($post, 'general', 'ch');
+        $orderData['child_age_1'] = self::findFieldByKeys($post, 'general', 'ch1');
+        $orderData['child_age_2'] = self::findFieldByKeys($post, 'general', 'ch2');
+        $orderData['child_age_3'] = self::findFieldByKeys($post, 'general', 'ch3');
+        $orderData['price_comfort'] = self::findFieldByKeys($post, 'general', 'pc');
+        $orderData['price_max'] = self::findFieldByKeys($post, 'general', 'pt');
+        $orderData['wish'] = self::findFieldByKeys($post, 'params', 'wish');
+        $orderData['department_city_id'] = self::findFieldByKeys($post, 'hotels', 'departmentId');
+        $orderData['currency'] = self::findFieldByKeys($post, 'general', 'cur');
+
+        return $orderData;
+    }
+
+    /**
+     * Поиск необходдимых значений в POST данных
+     *
+     * @param  - POST данные с формы
+     * @param $keyParentArray - ключ массива в котором искать значение. Данные могут
+     * находится в :
+     * - general - это массив из верхних контролов (дата вылета, кол-в ночей, кол-во гостей, цены)
+     * - tours - данные по направлениям
+     * - hotels - данные по конкретному отелю
+     * - params - общие данные
+     * @param $keyChildArray - ключ конкретного значения
+     * @return string
+     */
+    public static function findFieldByKeys($postData, $keyParentArray, $keyChildArray)
+    {
+        if (isset($postData[$keyParentArray][$keyChildArray])) {
+            return $postData[$keyParentArray][$keyChildArray];
+        } else {
+            return '';
+        }
     }
 
     /*
@@ -404,7 +448,7 @@ class BookingController extends Controller
     }
 
     /*
-     * Поиск менеджерапо данный из формы Нестандартный подбор
+     * Поиск менеджера по данный из формы Нестандартный подбор
      * @param $postData - POST данные с формы
      * return id менеджера
      */
@@ -505,6 +549,130 @@ class BookingController extends Controller
         return false;
     }
 
+    /**
+     * Поиск менеджера для заявки
+     * @param $bookingId - идентификатор заявки
+     */
+    public static function findManagerToOrder($booking)
+    {
+        //проверим принадлежность классу
+        if (!$booking instanceof Booking) {
+            if (is_numeric($booking)) {
+                $booking = Booking::find()->where(['id' => $booking])->one();
+            }
+        }
+        //получаем все критерии для отбора менеджеров
+        $conditions = Condition::findAllConditions();
+        //проверяем в Турпакетах
+        if ($booking->type == 'tours') {
+            if ($managerId = self::findManagerTours($booking, $conditions)){
+                return $managerId;
+            }
+        }
+        //проверяем в Конкретном отеле
+        if ($booking->type == 'hotels') {
+            if ($managerId = self::findManagerHotels($booking, $conditions)){
+                return $managerId;
+            }
+        }
+
+        if ($booking->type == 'custom') {
+            //попробуем найти название Страны и Города
+            if ($managerId = self::findManagerInCustomFormByCountryCity($booking, $conditions)){
+                return $managerId;
+            }
+            //попробуем найти Вхождение страны и тогда назначим главного менеджера
+            if ($managerId = self::findManagerInCustomFormByCountries($booking)){
+                return $managerId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Поиск менеджера по Туркакетам
+     *
+     * @param $booking - экземпляр Booking или id заявки
+     * @param $conditions - условия для отбора менеджеров
+     * @return bool or id менеджера
+     */
+    public static function findManagerTours($booking, $conditions)
+    {
+        $hasCountry = false;
+        foreach ($booking->directions as $direction) {
+            //проверяем каждое направление по всем критериям
+            foreach ($conditions as $conditionItem) {
+                $countEquals = 0;
+                //проверяем по каждому условию
+                foreach ($conditionItem['condition'] as $criterionKey => $criterionValue) {
+                    $value = $direction->findValue($criterionKey);
+                    if (BookingHelper::isEqual($criterionValue, $value)) {
+                        $countEquals++;
+                    }
+                }
+                //если кол-во критериев и кол-во совпадений равно, то назначаем менеджера
+                if (count($conditionItem['condition']) == $countEquals) {
+                    return $conditionItem['manager_id'];
+                }
+            }
+            if (!empty($direction->findValue('country_id'))) {
+                $hasCountry = true;
+            }
+
+        }
+        //если не подошел ни один менеджер, то проверим наличие страны и назначим Главного
+        if ($hasCountry) {
+            $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+            if (!empty($generalManager->id)) {
+                return $generalManager->id;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Поиск менеджера по Конкретному отелю
+     *
+     * @param $booking - экземпляр Booking или id заявки
+     * @param $conditions - условия для отбора менеджеров
+     * @return bool or id менеджера
+     */
+    public static function findManagerHotels($booking, $conditions)
+    {
+        $hasCountry = false;
+        foreach ($booking->hotels as $hotel) {
+            //проверяем каждый отель по всем критериям
+            foreach ($conditions as $conditionItem) {
+                $countEquals = 0;
+                //проверяем по каждому условию
+                foreach ($conditionItem['condition'] as $criterionKey => $criterionValue) {
+                    $value = $hotel->findValue($criterionKey);
+                    if (BookingHelper::isEqual($criterionValue, $value)) {
+                        $countEquals++;
+                    }
+                }
+                //если кол-во критериев и кол-во совпадений равно, то назначаем менеджера
+                if (count($conditionItem['condition']) == $countEquals) {
+                    return $conditionItem['manager_id'];
+                }
+            }
+            if (!empty($hotel->findValue('country_id'))) {
+                $hasCountry = true;
+            }
+        }
+        //если не подошел ни один менеджер, то проверим наличие страны и назначим Главного
+        if ($hasCountry) {
+            $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+            if (!empty($generalManager->id)) {
+                return $generalManager->id;
+            }
+        }
+
+        return false;
+    }
+
     /*
      * Проверяем, есть ли в направениях данные по стране
      * @param $postData - данные с формы
@@ -553,18 +721,21 @@ class BookingController extends Controller
      * Поиск по полю Параметры при Нестандартном запросе. Пытаемся найти вхождение Страны по списку всех стран
      * @param $postData - данные из формы
      */
-    private static function findManagerInCustomFormByCountries($postData)
+    private static function findManagerInCustomFormByCountries($booking)
     {
         $countries = CountryDictionary::find()
             ->where(['active' => 1, 'trash' => 0])
             ->asArray()
             ->orderBy(['name' => SORT_ASC])
             ->all();
-        if (!empty($postData['parametrs'])) {
+        if (!empty($booking->parametrs)) {
             foreach ($countries as $country) {
                 //если в тексте нашли вхождение страны
-                if (preg_match('#'.$country['name'].'#siU', $postData['parametrs'])) {
-                    return true;
+                if (preg_match('#'.$country['name'].'#siU', $booking->parametrs)) {
+                    $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+                    if (!empty($generalManager->id)) {
+                        return $generalManager->id;
+                    }
                 }
             }
         }
@@ -577,20 +748,22 @@ class BookingController extends Controller
      * @param $postData - данные из формы
      * @param $conditions - массив услови менеджеров
      */
-    private static function findManagerInCustomFormByCountryCity($postData, $conditions)
+    private static function findManagerInCustomFormByCountryCity($booking, $conditions)
     {
-        $onlyFields = ['country', 'city'];
+        $onlyFields = ['country_id', 'city_id'];
         foreach ($conditions as $conditionManagerItem) {
             foreach ($conditionManagerItem as $conditionItem) {
                 if (count($conditionItem) == 2 &&
-                    isset($conditionItem['country']) &&
-                    isset($conditionItem['city'])) {
+                    isset($conditionItem['country_id']) &&
+                    isset($conditionItem['city_id'])) {
 
-                    if (!empty($postData['parametrs'])) {
+                    $countryName = CountryDictionary::findName($conditionItem['country_id']);
+                    $cityName = CityDictionary::findName($conditionItem['city_id']);
+                    if (!empty($booking->parametrs)) {
                         //если в тексте нашли вхождение страны
-                        if (preg_match('#'.$conditionItem['country'].'#siU', $postData['parametrs'])) {
+                        if (preg_match('#'.$countryName.'#siU', $booking->parametrs)) {
                             //если в тексте нашли вхождение города
-                            if (preg_match('#'.$conditionItem['city'].'#siU', $postData['parametrs'])) {
+                            if (preg_match('#'.$cityName.'#siU', $booking->parametrs)) {
                                 return $conditionManagerItem['manager_id'];
                             }
                         }

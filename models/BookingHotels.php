@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use app\models\Dictionary\HotelDictionary;
 
 /**
  * This is the model class for table "booking_hotels".
@@ -62,4 +63,56 @@ class BookingHotels extends \yii\db\ActiveRecord
     {
         return $this->hasOne(HotelDictionary::className(), ['id' => 'hotel_id']);
     }
+
+    /**
+     * Получение звездности отеля
+     * @return mixed
+     */
+    public function getStars()
+    {
+        return $this->hotelProfile->categoryProfile->value;
+    }
+
+    /**
+     * Получение имени города, в котором расположен отель
+     * @return mixed
+     */
+    public function getCityName()
+    {
+        return $this->hotelProfile->resortProfile->name;
+    }
+
+    /**
+     * Получение страны, в которой расположен отель
+     * @return mixed
+     */
+    public function getCountryName()
+    {
+        return $this->hotelProfile->resortProfile->countryProfile->name;
+    }
+
+    /**
+     * Получение названия отеля
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->hotelProfile->name;
+    }
+
+    public function findValue($key)
+    {
+        switch ($key) {
+            case 'country_id':
+                return $this->hotelProfile->resortProfile->countryProfile->id;
+                break;
+            case 'city_id':
+                return $this->hotelProfile->resortProfile->id;
+                break;
+            case 'alloccat_id':
+                return $this->hotelProfile->categoryProfile->id;
+                break;
+        }
+    }
+
 }

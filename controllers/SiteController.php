@@ -3,14 +3,16 @@
 namespace app\controllers;
 
 use app\models\Dictionary\CountryDictionary;
+use app\models\Params;
+use app\modules\admin\models\Condition;
 use app\modules\admin\models\Manager;
-use LibUiTourFilter\assets\libs\DotAsset;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\Booking;
+use app\helpers\BookingHelper;
 
 class SiteController extends Controller
 {
@@ -102,11 +104,59 @@ class SiteController extends Controller
 
     public function actionBooking()
     {
-        //$booking = Booking::find()->where(['id' => 114])->one();
-        $booking = Booking::find()->where(['id' => 172])->one();
-        $booking->delete();
+        $equalFields = [
+            'country_id' => '=',
+            'city_id' => '=',
+            'alloccat_id' => 'IN',
+        ];
+
+        $manager = BookingController::findManagerToOrder(67);
+        debug($manager);
         die();
-        debug($booking->extended->date_from);
+        //получим все условия и найдем точное совпадение
+        $booking = Booking::find()->where(['id' => 235])->one();
+
+        $conditions = Condition::findAllConditions();
+        if ($booking->id && $booking->type == 'tours') {
+            $hasCountry = false;
+            foreach ($booking->directions as $direction) {
+                //проверяем каждое направление по всем критериям
+                foreach ($conditions as $conditionItem) {
+                    $countEquals = 0;
+                    //проверяем по каждому условию
+                    foreach ($conditionItem['condition'] as $criterionKey => $criterionValue) {
+                        $value = $direction->findValue($criterionKey);
+                        if (BookingHelper::isEqual($criterionValue, $value)) {
+                            $countEquals++;
+                        }
+                    }
+                    //если кол-во критериев и кол-во совпадений равно, то назначаем менеджера
+                    if (count($conditionItem['condition']) == $countEquals) {
+                        return $conditionItem['manager_id'];
+                    }
+                }
+                if (!empty($direction->findValue('country_id'))) {
+                    $hasCountry = true;
+                }
+
+            }
+            //если не подошел ни один менеджер, то проверим наличие страны и назначим Главного
+            if ($hasCountry) {
+                $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+                if (!empty($generalManager->id)) {
+                    return $generalManager->id;
+                }
+            }
+
+        }
+
+        die('stop');
+        //$params = Params::find()->asArray()->where(['entity' => 'booking_directions', 'entity_id' => 19])->andWhere(['category' => 'tour_category'])->all();
+        //debug($params);
+        //die();
+        //debug($params->createCommand()->getRawSql());
+
+        $booking = Booking::find()->with('directions')->with('hotels')->where(['id' => 228])->one();
         foreach ($booking->directions as $direction) {
             if ($direction->countryProfile) {
                 echo "<p><b>Страна:</b> {$direction->countryProfile->name}</p>";
@@ -117,18 +167,55 @@ class SiteController extends Controller
             if ($direction->departmentCityProfile) {
                 echo "<p><b>Город вылета:</b> {$direction->departmentCityProfile->name}</p>";
             }
-            //debug($direction);
-        }
-        die('..');
-        $booking = Booking::find()->where(['id' => 136])->one();
-        foreach ($booking->hotels as $hotel) {
-            echo "<p><b>Отель:</b> {$hotel->hotelProfile->name}</p>";
-            echo "<p><b>Страна:</b> {$hotel->hotelProfile->resortProfile->countryProfile->name}</p>";
-            echo "<p><b>Город:</b> {$hotel->hotelProfile->resortProfile->name}</p>";
-            echo "<p><b>Звездность:</b> {$hotel->hotelProfile->categoryProfile->name}</p>";
+            echo "<p>Питания</p>";
+            foreach ($direction->meals as $item) {
+                //var_dump($item->value);
+                var_dump($item->valueText);
+            }
+            echo "<p>Расположение</p>";
+            echo "<p>{$direction->placeCategory->valueText}</p>";
+            foreach ($direction->place as $item) {
+                var_dump($item->valueText);
+            }
+
+            echo "<p>Звездность</p>";
+            foreach ($direction->categories as $item) {
+                var_dump($item->valueText);
+            }
+
+            echo "<p>Рейтинг</p>";
+            foreach ($direction->rating as $item) {
+                var_dump($item->valueText);
+            }
+
+            echo "<p>Для детей</p>";
+            foreach ($direction->forBaby as $item) {
+                var_dump($item->valueText);
+            }
+
+            echo "<p>Прочее</p>";
+            foreach ($direction->other as $item) {
+                var_dump($item->valueText);
+            }
+            //var_dump($direction->meals);
+            //foreach ($direction->getMeals() as $item) {
+            //    debug($item->value);
+           // }
+
         }
 
-        die('...');
+        $booking = Booking::find()->with('hotels')->where(['id' => 228])->one();
+        if ($booking->type = 'hotels') {
+
+        }
+        foreach ($booking->hotels as $hotel) {
+            echo "<p><b>Отель:</b> {$hotel->hotelProfile->name} : {$hotel->name}</p>";
+            echo "<p><b>Страна:</b> {$hotel->hotelProfile->resortProfile->countryProfile->name} : {$hotel->countryName}</p>";
+            echo "<p><b>Город:</b> {$hotel->hotelProfile->resortProfile->name} : {$hotel->cityName}</p>";
+            echo "<p><b>Звездность:</b> {$hotel->hotelProfile->categoryProfile->value} : {$hotel->stars}</p>";
+        }
+
+
     }
 
 }
