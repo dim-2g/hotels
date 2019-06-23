@@ -29,4 +29,12 @@ class CountryDictionary extends AppDictionary
         return $id;
     }
 
+    public static function findAllCountries()
+    {
+        return self::find()
+            ->where(['active' => 1, 'trash' => 0])
+            ->asArray()
+            ->orderBy(['name' => SORT_ASC])
+            ->all();
+    }
 }

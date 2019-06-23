@@ -83,18 +83,21 @@ class BookingController extends Controller
             'errors' => [],
         ];
         $post = Yii::$app->request->post();
-        $managerId = self::findManagerForCustomForm($post);
-        $post['manager_id'] = $managerId ? $managerId : '';
-
-        $booking = new Booking();
+        $post['type'] = 'custom';
+        $booking = new Booking(['scenario' => Booking::SCENARIO_CUSTOM]);
         if ($booking->load($post, '')) {
             if ($booking->validate()) {
                 $booking->save();
+                //определим менеджера по заявке
+                $booking->manager_id = self::findManagerToOrder($booking);
+                $booking->save();
+
                 $response['success'] = true;
             } else {
                 $response['errors'] = BookingHelper::prepareErrorsAjaxForm($booking->getErrors());
             }
         }
+
         return json_encode($response);
     }
 
@@ -284,6 +287,7 @@ class BookingController extends Controller
 
     /**
      * Поиск сценария для валидации нужных полей
+     * @param $postData - POST данные, в которых ищем значение order_type
      * @return string
      */
     public static function findScenario($postData)
@@ -447,108 +451,6 @@ class BookingController extends Controller
             ->send();
     }
 
-    /*
-     * Поиск менеджера по данный из формы Нестандартный подбор
-     * @param $postData - POST данные с формы
-     * return id менеджера
-     */
-    public static function findManagerForCustomForm($postData)
-    {
-        //получим все условия и найдем точное совпадение
-        $conditions = Condition::findAllConditions();
-        //попробуем найти заявки с Нестандартной формы с вхождением по Городу и Стране.
-        if ($manager = self::findManagerInCustomFormByCountryCity($postData, $conditions)) {
-            return $manager;
-        }
-
-        //получим список всех стран и попробуем найти вхождение.
-        //если найдется, то назначим general менеджеру
-        $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
-        if (!empty($generalManager->id)) {
-            if (self::findManagerInCustomFormByCountries($postData)) {
-                return $generalManager->id;
-            }
-        }
-
-        return false;
-    }
-
-    /*
-     * Проверяет соответствие массивов Критерия и Претендента по массиву Правил
-     * @param $equalFileds - массив Парвил
-     * @param $conditionArray - массив критериев из АР Condition
-     * @param $orderArray - массив с проверяемыми данными
-     * return id менеджера
-     */
-    private static function isEqualFields($equalFileds, $conditionArray, $orderArray)
-    {
-        $equalCount = 0;
-        $equalValue = 0;
-        //проходим по всем условиям
-        foreach ($conditionArray as $key => $equalField) {
-            //важно чтобы ключ содержался и в первом и во втором массиве
-            $method = '=';
-            if (isset($equalFileds[$key])) {
-                $method = $equalFileds[$key];
-            }
-            // проверяем есть ли такой ключ  в проверяемом массиве
-            if (!isset($orderArray[$key])) {
-                continue;
-            }
-            $equalCount++;
-
-            switch ($method) {
-                case '=':
-                    if ($conditionArray[$key] == $orderArray[$key]) {
-                        $equalValue++;
-                    }
-                    break;
-                case 'IN':
-                    if (in_array($conditionArray[$key], $orderArray[$key])) {
-                        $equalValue++;
-                    }
-                    break;
-            }
-        }
-        return $equalCount == $equalValue;
-    }
-
-    /**
-     * Комплексный метод подбора подходящего менеджера
-     * @param $postData - данные с формы
-     * return id менеджера либо false
-     */
-    public static function findRightManager($postData)
-    {
-        $equalFields = [
-            'country' => '=',
-            'city' => '=',
-            'stars' => 'IN',
-        ];
-
-        //получим все условия и найдем точное совпадение
-        $conditions = Condition::findAllConditions();
-        if ($manager = self::findManagerInTourRows($postData, $conditions, $equalFields)) {
-            return $manager;
-        }
-        if ($manager = self::findManagerInHotelRows($postData, $conditions, $equalFields)) {
-            return $manager;
-        }
-        //если не нашли, то проверим, есть ли вхождение Страны в заявке, чтобы отправит General менеджеру
-        //получим менеджера
-        $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
-        if (!empty($generalManager->id)) {
-            if (self::hasCountryInTourRows($postData)) {
-                return $generalManager->id;
-            }
-            if (self::hasCountryInHotelsRows($postData)) {
-                return $generalManager->id;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Поиск менеджера для заявки
      * @param $bookingId - идентификатор заявки
@@ -575,7 +477,7 @@ class BookingController extends Controller
                 return $managerId;
             }
         }
-
+        //для формы Нестандартный подбор
         if ($booking->type == 'custom') {
             //попробуем найти название Страны и Города
             if ($managerId = self::findManagerInCustomFormByCountryCity($booking, $conditions)){
@@ -619,11 +521,10 @@ class BookingController extends Controller
             if (!empty($direction->findValue('country_id'))) {
                 $hasCountry = true;
             }
-
         }
         //если не подошел ни один менеджер, то проверим наличие страны и назначим Главного
         if ($hasCountry) {
-            $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+            $generalManager = Manager::findGeneralManager();
             if (!empty($generalManager->id)) {
                 return $generalManager->id;
             }
@@ -664,53 +565,9 @@ class BookingController extends Controller
         }
         //если не подошел ни один менеджер, то проверим наличие страны и назначим Главного
         if ($hasCountry) {
-            $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+            $generalManager = Manager::findGeneralManager();
             if (!empty($generalManager->id)) {
                 return $generalManager->id;
-            }
-        }
-
-        return false;
-    }
-
-    /*
-     * Проверяем, есть ли в направениях данные по стране
-     * @param $postData - данные с формы
-     */
-    private static function hasCountryInTourRows($postData)
-    {
-        if (self::hasTours($postData)) {
-            foreach ($postData['tour']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                if (!empty($item['countryId'])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private static function isOrderTour()
-    {
-
-    }
-
-    /*
-     * Проверяем, есть ли данные по стране в строках с отелями
-     * @param $postData - данные с формы
-     */
-    private static function hasCountryInHotelsRows($postData)
-    {
-        if (self::hasHotels($postData)) {
-            foreach ($postData['hotels']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                //если есть идентификатор отеля, то точно можно страну узнать
-                if (!empty($item['hotelId'])) {
-                    return true;
-                }
             }
         }
 
@@ -723,16 +580,12 @@ class BookingController extends Controller
      */
     private static function findManagerInCustomFormByCountries($booking)
     {
-        $countries = CountryDictionary::find()
-            ->where(['active' => 1, 'trash' => 0])
-            ->asArray()
-            ->orderBy(['name' => SORT_ASC])
-            ->all();
+        $countries = CountryDictionary::findAllCountries();
         if (!empty($booking->parametrs)) {
             foreach ($countries as $country) {
                 //если в тексте нашли вхождение страны
                 if (preg_match('#'.$country['name'].'#siU', $booking->parametrs)) {
-                    $generalManager = Manager::find()->where(['general' => 1])->limit(1)->one();
+                    $generalManager = Manager::findGeneralManager();
                     if (!empty($generalManager->id)) {
                         return $generalManager->id;
                     }
@@ -753,6 +606,7 @@ class BookingController extends Controller
         $onlyFields = ['country_id', 'city_id'];
         foreach ($conditions as $conditionManagerItem) {
             foreach ($conditionManagerItem as $conditionItem) {
+                //проверяем наличие 2х параметров Страна и Город в критериях
                 if (count($conditionItem) == 2 &&
                     isset($conditionItem['country_id']) &&
                     isset($conditionItem['city_id'])) {
@@ -773,110 +627,6 @@ class BookingController extends Controller
         }
         return false;
     }
-
-    /*
-     * Ищем менеджера в Турпакетах Комплексной формы
-     */
-    private static function findManagerInTourRows($postData, $conditions, $equalFields)
-    {
-        if (self::hasTours($postData)) {
-            foreach ($postData['tour']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                $countryName = $cityName = '';
-                if (!empty($item['countryId'])) {
-                    $countryName = static::findCountryNameById($item['countryId']);
-                }
-                if (!empty($item['cityId'])) {
-                    $cityName = static::findCityNameById($item['cityId']);
-                }
-                //получаем Звездность отеля
-                $stars = [];
-                if (!empty($item['params']['tour_category'])) {
-                    if (self::isStarsAny($item['params']['tour_category'])) {
-                        $tmp[] = 'Любая';
-                    } else {
-                        $alloccat = AlloccatDictionary::find()
-                            ->select('name')
-                            ->where(['id' => $item['params']['tour_category'] ])
-                            ->asArray()
-                            ->all();
-                        foreach ($alloccat as $alloccatItem) {
-                            $stars[] = str_replace('*', '', $alloccatItem['name']);
-                        }
-                    }
-                    $stars[] = 'Любая';
-                }
-                $currentData = [
-                    'country' => $countryName,
-                    'city' => $cityName,
-                    'stars' => $stars,
-                ];
-                foreach ($conditions as $conditionManagerItem) {
-                    $res = self::isEqualFields($equalFields, $conditionManagerItem['condition'], $currentData);
-                    if ($res) {
-                        return $conditionManagerItem['manager_id'];
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /*
-     * Ищем менеджера в Отелях Комплексной формы
-     */
-    private static function findManagerInHotelRows($postData, $conditions, $equalFields)
-    {
-
-        if (self::hasHotels($postData)) {
-            $output[] = 'Данные по Конкретным отелям';
-            $iter = 1;
-            foreach ($postData['hotels']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                if (!empty($item['hotelId'])) {
-                    $hotel = HotelDictionary::find()
-                        ->with('resort')
-                        ->where(['id' => $item['hotelId']])
-                        ->asArray()
-                        ->one();
-                    $cityName = $hotel['resort']['name'];
-                    $countryName = static::findCountryNameById($hotel['resort']['country']);
-
-                    //получаем Звездность отеля
-                    $stars = [];
-                    if (!empty($hotel['cat'])) {
-                        $alloccat = AlloccatDictionary::find()
-                            ->select('name')
-                            ->where(['id' => $hotel['cat'] ])
-                            ->asArray()
-                            ->all();
-                        foreach ($alloccat as $alloccatItem) {
-                            $stars[] = str_replace('*', '', $alloccatItem['name']);
-                        }
-                    }
-                    $currentData = [
-                        'country' => $countryName,
-                        'city' => $cityName,
-                        'stars' => $stars,
-                    ];
-                    foreach ($conditions as $conditionManagerItem) {
-
-                        $res = self::isEqualFields($equalFields, $conditionManagerItem['condition'], $currentData);
-                        if ($res) {
-                            return $conditionManagerItem['manager_id'];
-                        }
-                    }
-
-                }
-            }
-        }
-
-        return false;
-    }
-
 
     /*
      * Преобразуем данные для поля Дата вылета

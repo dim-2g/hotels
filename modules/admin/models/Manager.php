@@ -47,4 +47,12 @@ class Manager extends \yii\db\ActiveRecord
             'general' => 'Главный',
         ];
     }
+
+    /**
+     * @return string
+     */
+    public static function findGeneralManager()
+    {
+        return self::find()->where(['general' => 1])->limit(1)->one();
+    }
 }
