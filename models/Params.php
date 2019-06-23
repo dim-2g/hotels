@@ -115,6 +115,19 @@ class Params extends \yii\db\ActiveRecord
                 }
                 break;
 
+            case 'tour_rating':
+                if ($this->value == 'not_important') {
+                    $valueText = 'не важен';
+                } else {
+                    if (!empty($this->value)) {
+                        $valueText = 'не менее ' . $this->value;
+                    } else {
+                        $valueText = 'не важен';
+                    }
+
+                }
+                break;
+
             case 'tour_baby':
                 if (array_key_exists($this->value, BookingController::$childrenParams)) {
                     $valueText = BookingController::$childrenParams[ $this->value ];

@@ -16,6 +16,10 @@
     margin-bottom: 8px;
 }
 
+.booking-table{
+    font-size: 12px;
+}
+
 .booking-table td{
     max-width: 200px;
     overflow: hidden;

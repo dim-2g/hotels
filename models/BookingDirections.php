@@ -90,6 +90,45 @@ class BookingDirections extends \yii\db\ActiveRecord
     }
 
     /**
+     * Получить имя страны из связанных данных
+     *
+     * @return |null
+     */
+    public function getCountryName()
+    {
+        if ($this->countryProfile) {
+            return $this->countryProfile->name;
+        }
+        return null;
+    }
+
+    /**
+     * Получение имени города из связанных данных
+     *
+     * @return |null
+     */
+    public function getCityName()
+    {
+        if ($this->cityProfile) {
+            return $this->cityProfile->name;
+        }
+        return null;
+    }
+
+    /**
+     * Получение имени города из связанных данных
+     *
+     * @return |null
+     */
+    public function getDepartmentCityName()
+    {
+        if ($this->departmentCityProfile) {
+            return $this->departmentCityProfile->name;
+        }
+        return 'не указан';
+    }
+
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getParams()
@@ -117,12 +156,35 @@ class BookingDirections extends \yii\db\ActiveRecord
     }
 
     /**
+     * Питание в параметрах отеля
+     * @return mixed
+     */
+    public function getMealsString()
+    {
+        $output = [];
+        foreach ($this->meals as $item) {
+            $output[] = $item->valueText;
+        }
+        return implode(', ', $output);
+    }
+
+    /**
      * Категория отеля в параметрах отеля
      * @return mixed
      */
     public function getCategories()
     {
         return $this->getTourParams('tour_category');
+    }
+
+    public function getStarsString()
+    {
+        $output = [];
+        foreach ($this->categories as $item) {
+            $output[] = $item->valueText;
+        }
+        asort($output);
+        return implode(', ', $output);
     }
 
     /**
@@ -135,6 +197,19 @@ class BookingDirections extends \yii\db\ActiveRecord
     }
 
     /**
+     * Получение параметров отеля по рейтингу
+     * @return string
+     */
+    public function getRatingString()
+    {
+        $output = [];
+        foreach ($this->getTourParams('tour_rating') as $item) {
+            $output[] = $item->valueText;
+        }
+        return implode(', ', $output);
+    }
+
+    /**
      * Получение параметров расположения отеля
      * @return string
      */
@@ -143,9 +218,34 @@ class BookingDirections extends \yii\db\ActiveRecord
         return $this->getTourParams('tour_place');
     }
 
+    /**
+     * Получение параметров расположения отеля
+     * @return string
+     */
+    public function getPlaceString()
+    {
+        $output = [];
+        foreach ($this->getTourParams('tour_place') as $item) {
+            $output[] = $item->valueText;
+        }
+        return implode(', ', $output);
+    }
+
+    /**
+     * @return mixed
+     */
     public function getForBaby()
     {
         return $this->getTourParams('tour_baby');
+    }
+
+    public function getForBabyString()
+    {
+        $output = [];
+        foreach ($this->getTourParams('tour_baby') as $item) {
+            $output[] = $item->valueText;
+        }
+        return implode(', ', $output);
     }
 
     public function getOther()
@@ -153,13 +253,33 @@ class BookingDirections extends \yii\db\ActiveRecord
         return $this->getTourParams('tour_other');
     }
 
+    public function getOtherString()
+    {
+        $output = [];
+        foreach ($this->getTourParams('tour_other') as $item) {
+            $output[] = $item->valueText;
+        }
+        return implode(', ', $output);
+    }
+
     public function getPlaceCategory()
     {
         $place = $this->getParams()->andWhere(['category' => 'tour_place'])->one();
-        $placeCategory = explode('_', $place->value);
-        $place->category = 'tour_place_category';
-        $place->value = $placeCategory[0];
-        return $place;
+        if ($place) {
+            $placeCategory = explode('_', $place->value);
+            $place->category = 'tour_place_category';
+            $place->value = $placeCategory[0];
+            return $place;
+        }
+        return null;
+    }
+
+    public function getPlaceCategoryName()
+    {
+        if ($this->placeCategory) {
+            return $this->placeCategory->valueText;
+        }
+        return null;
     }
 
     public function findValue($key)
@@ -182,4 +302,5 @@ class BookingDirections extends \yii\db\ActiveRecord
                 break;
         }
     }
+
 }

@@ -214,7 +214,7 @@ class BookingController extends Controller
                     if (!empty($post['hotels']['meal'])) {
                         foreach ($post['hotels']['meal'] as $value) {
                             $param = new Params();
-                            $param->entity = 'hotel_meal';
+                            $param->entity = 'booking_params';
                             $param->entity_id = $booking->id;
                             $param->category = 'hotel_meal';
                             $param->value = $value;

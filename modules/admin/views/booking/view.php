@@ -41,6 +41,14 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                     'attribute' => 'manager_id',
                     'value' => function($data) {
+                        $output = [];
+                        $managerText = 'нет распределения,<br /> так как нет направления';
+                        if (!empty($data->manager_id)) {
+                            $manager = Manager::find()->where(['id' => $data->manager_id])->limit(1)->one();
+                            $managerText = $manager->name;
+                        }
+                        $output[] = "<b>Менеджер</b>:<br /> {$managerText}";
+        /*
                         $extendedFields = json_decode($data->raw_data, true);
                         $output = [];
                         $managerText = 'нет распределения,<br /> так как нет направления';
@@ -65,13 +73,16 @@ $this->params['breadcrumbs'][] = $this->title;
                         $output[] = "<b>Бюджет</b>:<br /> {$data->budget}";
                         $output[] = "<b>Город туриста</b>:<br /> {$data->tourist_city}";
                         return implode('<br />', $output);
+        */
+                        return implode('<br />', $output);
                     },
                     'format' => 'raw'
             ],
             [
                     'attribute' => 'date_from',
                     'value' => function($data) {
-                        return $data->extended->date_from;
+                        return 'date_from';
+                        //return $data->extended->date_from;
                     },
             ]
         ],

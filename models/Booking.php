@@ -3,6 +3,7 @@
 namespace app\models;
 
 use app\models\BookingDirections;
+use app\models\Dictionary\CityDictionary;
 use Yii;
 use yii\base\Model;
 use yii\db\ActiveRecord;
@@ -35,6 +36,9 @@ class Booking extends ActiveRecord
      */
     const SCENARIO_HOTELS = 'hotels';
 
+    /*
+     * привязка к дополнительным параметрам
+     */
     public $booking_params = 'booking_params';
 
     public static function tableName()
@@ -87,6 +91,15 @@ class Booking extends ActiveRecord
             'name' => 'Ваше имя',
             'phone' => 'Ваш телефон',
             'email' => 'Ваш Email',
+            'parametrs' => 'Страна/Курорт/Отель',
+            'created_at' => 'Дата добавл.',
+            'wish' => 'Пожелания клиента',
+            'date_departure' => 'Дата вылета',
+            'persons' => 'Гости',
+            'budget' => 'Бюджет',
+            'tourist_city' => 'Город туриста',
+            'manager_id' => 'Менеджер',
+            'extended' => 'Доп.инфо',
         ];
     }
 
@@ -139,6 +152,25 @@ class Booking extends ActiveRecord
     public function getExtended()
     {
         return $this->hasOne(BookingExtended::className(), ['booking_id' => 'id']);
+    }
+
+    public function getTouristCityName()
+    {
+        return CityDictionary::findName($this->tourist_city_id);
+    }
+
+    public function getMeals()
+    {
+        return $this->getParams()->andWhere(['category' => 'hotel_meal'])->all();
+    }
+
+    public function getMealsString()
+    {
+        $output = [];
+        foreach ($this->getMeals() as $item) {
+            $output[] = $item->valueText;
+        }
+        return implode(', ', $output);
     }
 
 }

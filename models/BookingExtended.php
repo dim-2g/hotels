@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\controllers\BookingController;
+use app\models\Dictionary\CityDictionary;
 use Yii;
 
 /**
@@ -141,4 +143,18 @@ class BookingExtended extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Booking::className(), ['id' => 'booking_id']);
     }
+
+    public function getCurrencyString()
+    {
+        if (array_key_exists($this->currency, BookingController::$currency)) {
+            return BookingController::$currency[$this->currency];
+        }
+        return $this->currency;
+    }
+
+    public function getDepartmentCityName()
+    {
+        return CityDictionary::findName($this->department_city_id);
+    }
+
 }

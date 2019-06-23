@@ -27,11 +27,37 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'columns' => [
             'id',
+            'created_at:ntext',
+            [
+                'attribute' => 'parametrs',
+                'value' => function($data) {
+                    if ($data->type == 'custom') {
+                        return $data->parametrs;
+                    }
+                    if ($data->type == 'tours') {
+                        $output = [];
+                        $iter = 1;
+                        foreach ($data->directions as $direction) {
+                            $output[] = "{$iter}. {$direction->countryName} / {$direction->cityName}";
+                            $iter++;
+                        }
+                        return implode("<br />", $output);
+                    }
+                    if ($data->type == 'hotels') {
+                        $output = [];
+                        $iter = 1;
+                        foreach ($data->hotels as $hotel) {
+                            $output[] = "{$iter}. {$hotel->countryName} / {$hotel->cityName} / {$hotel->name}";
+                            $iter++;
+                        }
+                        return implode("<br />", $output);
+                    }
+                },
+                'format' => 'raw',
+            ],
             'name:ntext',
             'email:ntext',
             'phone:ntext',
-            'parametrs:ntext',
-            'created_at:ntext',
             [
                     'attribute' => 'manager_id',
                     'value' => function($data) {
@@ -42,29 +68,80 @@ $this->params['breadcrumbs'][] = $this->title;
                         }
                         return $managerText;
                     },
-                    'format' => 'raw'
+                    'format' => 'raw',
             ],
-            'wish:ntext',
+            [
+                'attribute' => 'wish',
+                'value' => function($data) {
+                    if ($data->type == 'custom') {
+                        return $data->extended['wish'];
+                    }
+                    if ($data->type == 'tours') {
+                        $output = [];
+                        $iter = 1;
+                        foreach ($data->directions as $direction) {
+                            $row = [];
+                            $row[] = "Город вылета: {$direction->departmentCityName}";
+                            $row[] = "Звездность: {$direction->starsString}";
+                            $row[] = "Рейтинг: {$direction->ratingString}";
+                            $row[] = "Питание: {$direction->mealsString}";
+                            if ($direction->placeString) {
+                                $row[] = "Расположение: {$direction->placeCategoryName} {$direction->placeString}";
+                            }
+                            if ($direction->forBabyString) {
+                                $row[] = "Для детей: {$direction->forBabyString}";
+                            }
+                            if ($direction->otherString) {
+                                $row[] = "Прочее: {$direction->otherString}";
+                            }
+                            $output[] = "{$iter}." . implode(' / ', $row);
+                            $iter++;
+                        }
+                        $output[] = "<b>Доп.пожелания:</b><br /> {$data->extended['wish']}";
+                        return implode("<br />", $output);
+                    }
+                    if ($data->type == 'hotels') {
+                        $output = [];
+                        $cityDepartment = "Город вылета: {$data->extended['departmentCityName']}";
+                        $meals = "Питание: {$data->mealsString}";
+                        $iter = 1;
+                        foreach ($data->hotels as $hotel) {
+                            $row = [];
+                            $row[] = $cityDepartment;
+                            $row[] = $meals;
+                            $row[] = "Звездность: {$hotel->stars}";
+                            $output[] = "{$iter}." . implode(' / ', $row);
+                            $iter++;
+                        }
+                        $output[] = "<b>Доп.пожелания:</b><br /> {$data->extended['wish']}";
+                        return implode("<br />", $output);
+                    }
+                },
+                'format' => 'raw',
+            ],
             [
                     'attribute' => 'extended',
                     'value' => function($data) {
-                        $extendedFields = json_decode($data->raw_data, true);
                         $output = [];
-                        $output[] = "<b>Дата вылета</b>:<br /> {$extendedFields['general']['df']}&nbsp;-&nbsp;{$extendedFields['general']['dt']}";
-                        $output[] = "<b>Кол-во ночей</b>:<br /> {$extendedFields['general']['nf']}&nbsp;-&nbsp;{$extendedFields['general']['nt']}";
-                        $childs = [];
-                        foreach (['ch1' , 'ch2', 'ch3'] as $child) {
-                            if (!empty($extendedFields['general'][$child])) {
-                                $childs[] = $extendedFields['general'][$child];
+                        if ($data->type == 'tours' || $data->type == 'hotels') {
+                            $output[] = "<b>Дата вылета</b>:<br /> {$data->extended['date_from']}&nbsp;-&nbsp;{$data->extended['date_to']}";
+                            $output[] = "<b>Кол-во ночей</b>:<br /> {$data->extended['night_from']}&nbsp;-&nbsp;{$data->extended['night_to']}";
+                            if ($data->extended['child']) {
+                                $childs = [];
+                                foreach (['child_age_1', 'child_age_2', 'child_age_3'] as $child) {
+                                    if (!empty($data->extended[$child])) {
+                                        $childs[] = $data->extended[$child];
+                                    }
+                                }
                             }
+                            $childString = '';
+                            if (!empty($childs) && count($childs) > 0) {
+                                $childString = ' ('. implode(', ', $childs).' лет)';
+                            }
+                            $output[] = "<b>Кол-во человек</b>:<br /> взр.: {$data->extended['adult']}, детей: {$data->extended['child']}{$childString}";
+                            $output[] = "<b>Бюджет</b>:<br /> {$data->extended['price_comfort']}&nbsp;-&nbsp;{$data->extended['price_max']} {$data->extended['currencyString']}";
+                            $output[] = "<b>Город туриста</b>:<br /> {$data->touristCityName}";
                         }
-                        $childString = '';
-                        if (!empty($childs) && count($childs) > 0) {
-                            $childString = ' ('. implode(', ', $childs).' лет)';
-                        }
-                        $output[] = "<b>Кол-во человек</b>:<br /> взр.: {$extendedFields['general']['ad']}, детей: {$extendedFields['general']['ch']}{$childString}";
-                        $output[] = "<b>Бюджет</b>:<br /> {$data->budget}";
-                        $output[] = "<b>Город туриста</b>:<br /> {$data->tourist_city}";
                         return implode('<br />', $output);
                     },
                     'format' => 'raw'
