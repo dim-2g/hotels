@@ -44,7 +44,7 @@ class BookingHotels extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'booking_id' => 'Booking ID',
-            'hotel_id' => 'Hotel ID',
+            'hotel_id' => 'Отель',
         ];
     }
 

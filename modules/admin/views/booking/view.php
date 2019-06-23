@@ -96,27 +96,64 @@ $this->params['breadcrumbs'][] = $this->title;
         <?= DetailView::widget([
             'model' => $direction,
             'attributes' => [
-                'country_id:ntext',
                 [
                     'attribute' => 'country_id',
                     'value' => function($data) {
                         return $data->countryName;
                     }
                 ],
-                'city_id:ntext',
-                'department_city_id:ntext',
+                [
+                    'attribute' => 'city_id',
+                    'value' => function($data) {
+                        return $data->cityName;
+                    }
+                ],
+                [
+                    'attribute' => 'department_city_id',
+                    'value' => function($data) {
+                        return $data->departmentCityName;
+                    }
+                ],
+                [
+                    'attribute' => 'params',
+                    'value' => function($data) {
+                        $output = [];
+                        $output[] = "<p><b>Питание</b>: {$data->mealsString}</p>";
+                        $output[] = "<p><b>Расположение</b>: {$data->placeCategoryName} {$data->placeString}</p>";
+                        $output[] = "<p><b>Звездность</b>: {$data->starsString}</p>";
+                        $output[] = "<p><b>Рейтинг</b>: {$data->ratingString}</p>";
+                        $output[] = "<p><b>Для детей</b>: {$data->forBabyString}</p>";
+                        $output[] = "<p><b>Прочее</b>: {$data->otherString}</p>";
+                        return implode("\n", $output);
+                    },
+                    'format' => 'raw'
+                ],
             ],
         ]) ?>
         <?php } ?>
 
-       <?/*= GridView::widget([
-            'dataProvider' => $directions,
-            'columns' => [
-                'country_id:ntext',
-                'city_id:ntext',
-                'department_city_id:ntext',
-            ],
-        ]);*/ ?>
+
+
+    <? } ?>
+
+    <? if ($hotels) { ?>
+
+        <h2>Данные по конкретным отелям</h2>
+
+        <?php foreach ($hotels as $key => $hotel) {?>
+            <p>#<?=($key+1)?></p>
+            <?= DetailView::widget([
+                'model' => $hotel,
+                'attributes' => [
+                    [
+                        'attribute' => 'hotel_id',
+                        'value' => function($data) {
+                            return "{$data->countryName} / {$data->cityName} / {$data->name} / {$data->stars}*";
+                        }
+                    ],
+                ],
+            ]) ?>
+        <?php } ?>
 
     <? } ?>
 

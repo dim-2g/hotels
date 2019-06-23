@@ -64,6 +64,7 @@ class BookingController extends Controller
     {
         $bookingExtended = $this->findModel($id)->extended;
         $bookingDirections = $this->findModel($id)->directions;
+        $bookingHotels = $this->findModel($id)->hotels;
         /*$bookingDirections = new ActiveDataProvider([
             'query' => BookingDirections::find()->where(['booking_id' => $id]),
             'pagination' => [
@@ -75,6 +76,7 @@ class BookingController extends Controller
             'model' => $this->findModel($id),
             'extended' => $bookingExtended,
             'directions' => $bookingDirections,
+            'hotels' => $bookingHotels,
         ]);
     }
 

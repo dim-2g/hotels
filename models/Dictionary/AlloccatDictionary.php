@@ -21,4 +21,13 @@ class AlloccatDictionary extends AppDictionary
         return $value;
     }
 
+    public static function findName($id)
+    {
+        if ($res = self::find()->where(['id' => $id])->one()){
+            return $res->name;
+        }
+
+        return $id;
+    }
+
 }

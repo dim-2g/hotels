@@ -16,9 +16,9 @@ use Yii;
 class Condition extends \yii\db\ActiveRecord
 {
     public static $fieldName = [
-        'country' => 'Страна',
-        'city' => 'Курорт',
-        'stars' => 'Звездность',
+        'country_id' => 'Страна',
+        'city_id' => 'Курорт',
+        'alloccat_id' => 'Звездность',
     ];
     /**
      * {@inheritdoc}
