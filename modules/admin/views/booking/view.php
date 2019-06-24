@@ -40,6 +40,12 @@ $this->params['breadcrumbs'][] = $this->title;
             'parametrs:ntext',
             'created_at:ntext',
             [
+                'attribute' => 'tourist_city',
+                'value' => function($data) {
+                    return $data->touristCityName;
+                }
+            ],
+            [
                 'attribute' => 'manager_id',
                 'value' => function($data) {
                     $managerText = 'нет распределения,<br /> так как нет направления';
@@ -50,6 +56,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $managerText;
                 },
                 'format' => 'raw'
+            ],
+            [
+                'attribute' => 'meal',
+                'value' => function($data) {
+                    return $data->mealsString;
+                }
             ],
         ],
     ]) ?>
