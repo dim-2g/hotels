@@ -23,6 +23,14 @@ class SendEmailController extends Controller
 {
     public function actionIndex()
     {
+        $order = Booking::findOne(313);
+        print_r($order);
+        $order->notified = 1;
+        print_r($order);
+        $order->save();
+        print_r($order);
+        die('OK');
+
         $orders = Booking::find()->where(['notified' => null])
                                  ->andWhere(['not', ['manager_id' => null]])
                                  ->all();
@@ -41,6 +49,7 @@ class SendEmailController extends Controller
 
     private function isTimeHasCome($orderTime)
     {
+        return true;
         $orderTime = \DateTime::createFromFormat('Y-m-d H:i:s', $orderTime)->getTimestamp();
         $timeDiff = time() - $orderTime;
         if ($timeDiff > 2*60) {

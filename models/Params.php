@@ -140,6 +140,7 @@ class Params extends \yii\db\ActiveRecord
                     $valueText = BookingController::$otherParams[ $this->value ];
                 }
                 break;
+                
             default:
                 return $this->value;
         }

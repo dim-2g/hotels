@@ -597,6 +597,8 @@ class BookingController extends Controller
         return false;
     }
 
+
+
     /*
      * Поиск по полю Параметры при Нестандартном запросе. Пытаемся найти вхождение Страны и города
      * @param $postData - данные из формы
@@ -606,21 +608,19 @@ class BookingController extends Controller
     {
         $onlyFields = ['country_id', 'city_id'];
         foreach ($conditions as $conditionManagerItem) {
-            foreach ($conditionManagerItem as $conditionItem) {
-                //проверяем наличие 2х параметров Страна и Город в критериях
-                if (count($conditionItem) == 2 &&
-                    isset($conditionItem['country_id']) &&
-                    isset($conditionItem['city_id'])) {
+            //проверяем наличие 2х параметров Страна и Город в критериях
+            if (count($conditionManagerItem) == 2 &&
+                isset($conditionManagerItem['country_id']) &&
+                isset($conditionManagerItem['city_id'])) {
 
-                    $countryName = CountryDictionary::findName($conditionItem['country_id']);
-                    $cityName = CityDictionary::findName($conditionItem['city_id']);
-                    if (!empty($booking->parametrs)) {
-                        //если в тексте нашли вхождение страны
-                        if (preg_match('#'.$countryName.'#siU', $booking->parametrs)) {
-                            //если в тексте нашли вхождение города
-                            if (preg_match('#'.$cityName.'#siU', $booking->parametrs)) {
-                                return $conditionManagerItem['manager_id'];
-                            }
+                $countryName = CountryDictionary::findName($conditionManagerItem['country_id']);
+                $cityName = CityDictionary::findName($conditionManagerItem['city_id']);
+                if (!empty($booking->parametrs)) {
+                    //если в тексте нашли вхождение страны
+                    if (preg_match('#'.$countryName.'#siU', $booking->parametrs)) {
+                        //если в тексте нашли вхождение города
+                        if (preg_match('#'.$cityName.'#siU', $booking->parametrs)) {
+                            return $conditionManagerItem['manager_id'];
                         }
                     }
                 }
