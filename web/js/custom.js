@@ -109,7 +109,7 @@ $(document).ready(function () {
         //устанавливаем заголовок выпадающго списка городов = названию страны
         setCaptionCitySelect(tourRowNumber, countryName);
         //сбрасываем название города
-        setSumoSelect($(selectorDirectionCity), 'не важно');
+        setSumoSelect($('[data-tour-row="'+tourRowNumber+'"').find(selectorDirectionCity), 'не важно');
         //добавляем в объект заказа выбранную страну
         orderTour.addDirection(tourRowNumber, 'countryId', countryId);
     });
