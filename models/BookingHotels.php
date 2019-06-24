@@ -100,6 +100,12 @@ class BookingHotels extends \yii\db\ActiveRecord
         return $this->hotelProfile->name;
     }
 
+    /**
+     * Получение свойства по ключу из Условий для соотнечения менеджеров и заявок
+     * в условиях фигурируют такие ключи как сountry_id, city_id, alloccat_id
+     * у объекта есть сountry_id, city_id, а alloccat_id вытаскивает из параметров
+     * @return mixed
+     */
     public function findValue($key)
     {
         switch ($key) {

@@ -21,7 +21,11 @@ use \app\models\App;
  */
 class BookingDirections extends App
 {
+    /*
+     * служит как ключ для идентификации значений в Params таблице 
+    */
     public $booking_directions = 'booking_directions';
+
     /**
      * {@inheritdoc}
      */
@@ -91,8 +95,15 @@ class BookingDirections extends App
     }
 
     /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getParams()
+    {
+        return $this->hasMany(Params::className(), ['entity' => $this->booking_directions, 'entity_id' => 'id']);
+    }
+
+    /**
      * Получить имя страны из связанных данных
-     *
      * @return |null
      */
     public function getCountryName()
@@ -105,7 +116,6 @@ class BookingDirections extends App
 
     /**
      * Получение имени города из связанных данных
-     *
      * @return |null
      */
     public function getCityName()
@@ -117,8 +127,7 @@ class BookingDirections extends App
     }
 
     /**
-     * Получение имени города из связанных данных
-     *
+     * Получение имени города отправления из связанных данных
      * @return |null
      */
     public function getDepartmentCityName()
@@ -132,14 +141,6 @@ class BookingDirections extends App
         }
 
         return 'не указан';
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getParams()
-    {
-        return $this->hasMany(Params::className(), ['entity' => $this->booking_directions, 'entity_id' => 'id']);
     }
 
     /**
@@ -183,6 +184,10 @@ class BookingDirections extends App
         return $this->getTourParams('tour_category');
     }
 
+    /**
+     * Получение звездности отеля в виде строки
+     * @return string
+     */
     public function getStarsString()
     {
         $output = [];
@@ -238,13 +243,18 @@ class BookingDirections extends App
     }
 
     /**
+     * Получение выбранных значений "Детское" в параметрах отеля
      * @return mixed
-     */
+     */ 
     public function getForBaby()
     {
         return $this->getTourParams('tour_baby');
     }
 
+    /**
+     * Получение выбранных значений "Детское" в параметрах отеля в виде строки
+     * @return string
+     */ 
     public function getForBabyString()
     {
         $output = [];
@@ -254,11 +264,19 @@ class BookingDirections extends App
         return implode(', ', $output);
     }
 
+    /**
+     * Получение Прочих параметров отеля
+     * @return mixed
+     */ 
     public function getOther()
     {
         return $this->getTourParams('tour_other');
     }
 
+    /**
+     * Получение Прочих параметров отеля, в виде строки
+     * @return string
+     */ 
     public function getOtherString()
     {
         $output = [];
@@ -268,6 +286,10 @@ class BookingDirections extends App
         return implode(', ', $output);
     }
 
+    /**
+     * Получение id Месторасположения в параметрах отеля
+     * @return mixed
+     */ 
     public function getPlaceCategory()
     {
         $place = $this->getParams()->andWhere(['category' => 'tour_place'])->one();
@@ -280,6 +302,11 @@ class BookingDirections extends App
         return null;
     }
 
+    /**
+     * Название группы Месторасположения в параметрах отеля
+     * Пляжный, горный и т.д.
+     * @return mixed
+     */ 
     public function getPlaceCategoryName()
     {
         if ($this->placeCategory) {
@@ -288,6 +315,12 @@ class BookingDirections extends App
         return null;
     }
 
+    /**
+     * Получение свойства по ключу из Условий для соотнечения менеджеров и заявок
+     * в условиях фигурируют такие ключи как сountry_id, city_id, alloccat_id
+     * у объекта есть сountry_id, city_id, а alloccat_id вытаскивает из параметров
+     * @return mixed
+     */
     public function findValue($key)
     {
         switch ($key) {

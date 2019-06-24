@@ -105,6 +105,10 @@ class BookingExtended extends App
         return $this->hasOne(Booking::className(), ['id' => 'booking_id']);
     }
 
+    /**
+     * Получение валюты в читаемом виде
+     * @return |null
+     */
     public function getCurrencyString()
     {
         if (array_key_exists($this->currency, BookingController::$currency)) {
@@ -113,6 +117,10 @@ class BookingExtended extends App
         return $this->currency;
     }
 
+    /**
+     * Получение имени города отправления из связанных данных
+     * @return |null
+     */
     public function getDepartmentCityName()
     {
         if ($this->department_city_id == App::NO_FLY) {

@@ -63,7 +63,7 @@ class Params extends \yii\db\ActiveRecord
     }
 
     /**
-     * Получение текстового значения параметра
+     * Получение текстового значения параметра. Использую во View
      * @return string
      */
     public function getValueText()
