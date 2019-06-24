@@ -160,9 +160,10 @@ $(document).ready(function () {
     });
 
 
-    $('.js-show-formDirections').on('click', function () {
-
+    $('.js-show-formDirections').on('click', function (e) {
+        e.stopPropagation();
         $('.form-date + div').addClass('hidden');
+
         $(this).closest('html').find('.formDirections').hide();
         $(this).next('.formDirections').slideDown();
 
