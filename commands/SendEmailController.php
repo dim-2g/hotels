@@ -23,14 +23,6 @@ class SendEmailController extends Controller
 {
     public function actionIndex()
     {
-        $order = Booking::findOne(313);
-        print_r($order);
-        $order->notified = 1;
-        print_r($order);
-        $order->save();
-        print_r($order);
-        die('OK');
-
         $orders = Booking::find()->where(['notified' => null])
                                  ->andWhere(['not', ['manager_id' => null]])
                                  ->all();
@@ -38,6 +30,7 @@ class SendEmailController extends Controller
         foreach ($orders as $order) {
             if (self::isTimeHasCome($order->created_at)) {
                 if (BookingController::sendMailEx($order)) {
+                    $order->scenario = Booking::SCENARIO_CUSTOM;
                     $order->notified = 1;
                     $order->save();
                 }

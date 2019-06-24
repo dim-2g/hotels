@@ -7,6 +7,7 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
+use app\models\Booking;
 
 class SiteController extends Controller
 {
@@ -31,4 +32,5 @@ class SiteController extends Controller
             'data' => $formData
         ]);
     }
+
 }

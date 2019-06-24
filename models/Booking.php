@@ -40,6 +40,7 @@ class Booking extends App
             ['email', 'email', 'message' => 'Поле не соответствует формату "ххххх@xxxx.xxxx"'],
             ['manager_id', 'integer'],
             ['type', 'trim'],
+            ['notified', 'safe'],
             ['tourist_city_id', 'required', 'message' => 'Поле "Ваш город" обязательное для заполнения'],
             ['notified', 'integer']
 
@@ -55,7 +56,7 @@ class Booking extends App
     {
         $scenarios = parent::scenarios();
 
-        $scenarios[static::SCENARIO_CUSTOM] = ['parametrs', 'name', 'phone', 'email', 'type'];
+        $scenarios[static::SCENARIO_CUSTOM] = ['parametrs', 'name', 'phone', 'email', 'type', 'notified'];
         $scenarios[static::SCENARIO_FIRST_STEP] = ['type'];
         $scenarios[static::SCENARIO_TOURS] = ['parametrs', 'name', 'phone', 'email', 'type', 'tourist_city_id'];
         $scenarios[static::SCENARIO_HOTELS] = ['parametrs', 'name', 'phone', 'email', 'type', 'tourist_city_id'];
