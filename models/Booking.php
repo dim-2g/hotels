@@ -60,7 +60,6 @@ class Booking extends App
         $scenarios[static::SCENARIO_TOURS] = ['parametrs', 'name', 'phone', 'email', 'type', 'tourist_city_id'];
         $scenarios[static::SCENARIO_HOTELS] = ['parametrs', 'name', 'phone', 'email', 'type', 'tourist_city_id'];
 
-
         return $scenarios;
     }
 
