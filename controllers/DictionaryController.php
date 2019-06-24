@@ -25,11 +25,13 @@ class DictionaryController extends Controller
         $countries = CountryDictionary::find()
             ->where(['active' => 1, 'trash' => 0])
             ->asArray()
+            ->cache(7200)
             ->orderBy(['name' => SORT_ASC])
             ->all();
         $countries = BookingHelper::prepareCountryFlags($countries);
-
-        return json_encode($countries);
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $countries;
     }
 
     /*
@@ -41,10 +43,12 @@ class DictionaryController extends Controller
         $cities = CityDictionary::find()
             ->where(['country' => $countryId, 'active' => 1, 'trash' => 0])
             ->asArray()
+            ->cache(7200)
             ->orderBy(['name' => SORT_ASC])
             ->all();
 
-        return json_encode($cities);
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $cities;
     }
 
     public function actionDepartment()
@@ -59,6 +63,7 @@ class DictionaryController extends Controller
             ])
             ->orderBy(['name' => SORT_ASC])
             ->asArray()
+            ->cache(7200)
             ->all();
 
         $citiesAll = CityDictionary::find()
@@ -105,6 +110,7 @@ class DictionaryController extends Controller
                         'trash' => 0
             ])
             ->asArray()
+            ->cache(7200)
             ->orderBy(['name' => SORT_ASC])
             ->all();
 
@@ -118,7 +124,8 @@ class DictionaryController extends Controller
             $citiesAll
         );
 
-        return json_encode($cities);
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $cities;
     }
 
     /*
@@ -129,7 +136,9 @@ class DictionaryController extends Controller
     {
         $hotels = HotelDictionary::findHotels($query);
         $hotels = BookingHelper::prepareCountryFlags($hotels, 'country_name_eng');
-        return json_encode($hotels);
+
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $hotels;
     }
 
     /*
@@ -143,10 +152,11 @@ class DictionaryController extends Controller
             ->andWhere(['active' => 1, 'trash' => 0])
             ->orderBy(['name' => SORT_ASC])
             ->asArray()
+            ->cache(7200)
             ->all();
 
-        return json_encode($cities);
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        return $cities;
     }
-
 
 }

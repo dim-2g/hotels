@@ -551,8 +551,9 @@ initDirectionSelect = function() {
         success: function(response) {
             addCountryInAllSelects(response);
         },
-        error: function() {
+        error: function(xhr, status, errorText) {
             console.log('Error in method initDirectionSelect');
+            console.log(errorText);
         }
     });
 };
@@ -566,8 +567,9 @@ initDepartmentCitySelect = function() {
         success: function(response) {
             addDepartmentCityInAllSelects(response);
         },
-        error: function() {
+        error: function(xhr, status, errorText) {
             console.log('Error in method initDepartmentCitySelect');
+            console.log(errorText);
         }
     });
 };
@@ -628,8 +630,8 @@ initDirectionCitySelect = function(countryId, tourRowNumber) {
         success: function(response) {
             addCitiesSelect(response, tourRowNumber);
         },
-        error: function() {
-            console.log('Error');
+        error: function(xhr, status, errorText) {
+            console.log(errorText);
         }
     });
 };

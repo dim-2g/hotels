@@ -42,7 +42,6 @@ class SendEmailController extends Controller
 
     private function isTimeHasCome($orderTime)
     {
-        return true;
         $orderTime = \DateTime::createFromFormat('Y-m-d H:i:s', $orderTime)->getTimestamp();
         $timeDiff = time() - $orderTime;
         if ($timeDiff > 2*60) {
