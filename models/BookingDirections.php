@@ -5,6 +5,7 @@ namespace app\models;
 use Yii;
 use \app\models\Dictionary\CountryDictionary;
 use \app\models\Dictionary\CityDictionary;
+use \app\models\App;
 
 /**
  * This is the model class for table "booking_directions".
@@ -18,7 +19,7 @@ use \app\models\Dictionary\CityDictionary;
  *
  * @property Booking $booking
  */
-class BookingDirections extends \yii\db\ActiveRecord
+class BookingDirections extends App
 {
     public $booking_directions = 'booking_directions';
     /**
@@ -122,9 +123,14 @@ class BookingDirections extends \yii\db\ActiveRecord
      */
     public function getDepartmentCityName()
     {
-        if ($this->departmentCityProfile) {
-            return $this->departmentCityProfile->name;
+        if ($this->department_city_id == App::NO_FLY) {
+            return 'без перелета';
+        } else {
+            if ($this->departmentCityProfile) {
+                return $this->departmentCityProfile->name;
+            }
         }
+
         return 'не указан';
     }
 

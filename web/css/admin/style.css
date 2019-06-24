@@ -30,3 +30,7 @@
     max-width: 200px;
     overflow: hidden;
 }
+
+table.detail-view{
+    table-layout: fixed;
+}

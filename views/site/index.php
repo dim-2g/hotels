@@ -49,7 +49,6 @@ $this->title = 'TopHotels';
                         'jsFormObject' => 'var formDate',
                         'dateFrom' => $data['dateFrom'],
                         'dateTo' => $data['dateTo'],
-                        //'dateConfig' => ['startDate' => '2019-06-14'] // не работает подобный параметр, чтобы
                     ]); ?>
 
                     <?= \LibUiTourFilter\widgets\WNights::widget([
@@ -69,8 +68,8 @@ $this->title = 'TopHotels';
                         'cssClass' => 'tour-selection-field tour-selection-field--250',
                         'jsReqObject' => 'lsfw.bookingRequest',
                         'jsFormObject' => 'var formGuest',
-                        'adults' => 2,
-                        'children' => 0,
+                        'adults' => $data['adults'],
+                        'children' => $data['child'],
                     ]); ?>
 
                     <?= \LibUiTourFilter\widgets\WPrice::widget([

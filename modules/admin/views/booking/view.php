@@ -39,7 +39,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'phone:ntext',
             'parametrs:ntext',
             'created_at:ntext',
-            'wish:ntext',
             [
                 'attribute' => 'manager_id',
                 'value' => function($data) {
@@ -55,39 +54,43 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
+    <? if (!empty($extended)) { ?>
+
     <h2>Данные расширенной формы</h2>
 
-    <?= DetailView::widget([
-        'model' => $extended,
-        'attributes' => [
-            'date_from:ntext',
-            'date_to:ntext',
-            'night_from:ntext',
-            'night_to:ntext',
-            'adult:ntext',
-            'child:ntext',
-            'child_age_1:ntext',
-            'child_age_2:ntext',
-            'child_age_3:ntext',
-            'price_comfort:ntext',
-            'price_max:ntext',
-            [
-                    'attribute' => 'currency',
+        <?= DetailView::widget([
+            'model' => $extended,
+            'attributes' => [
+                'date_from:ntext',
+                'date_to:ntext',
+                'night_from:ntext',
+                'night_to:ntext',
+                'adult:ntext',
+                'child:ntext',
+                'child_age_1:ntext',
+                'child_age_2:ntext',
+                'child_age_3:ntext',
+                'price_comfort:ntext',
+                'price_max:ntext',
+                [
+                        'attribute' => 'currency',
+                        'value' => function($data) {
+                            return $data->currencyString;
+                        }
+                ],
+                'wish:ntext',
+                [
+                    'attribute' => 'department_city_id',
                     'value' => function($data) {
-                        return $data->currencyString;
+                        return $data->departmentCityName;
                     }
+                ],
             ],
-            'wish:ntext',
-            [
-                'attribute' => 'department_city_id',
-                'value' => function($data) {
-                    return $data->departmentCityName;
-                }
-            ],
-        ],
-    ]) ?>
+        ]) ?>
 
-    <? if ($directions) { ?>
+    <? } ?>
+
+    <? if (!empty($directions)) { ?>
 
         <h2>Данные по Турпакетам</h2>
 
@@ -118,12 +121,24 @@ $this->params['breadcrumbs'][] = $this->title;
                     'attribute' => 'params',
                     'value' => function($data) {
                         $output = [];
-                        $output[] = "<p><b>Питание</b>: {$data->mealsString}</p>";
-                        $output[] = "<p><b>Расположение</b>: {$data->placeCategoryName} {$data->placeString}</p>";
-                        $output[] = "<p><b>Звездность</b>: {$data->starsString}</p>";
-                        $output[] = "<p><b>Рейтинг</b>: {$data->ratingString}</p>";
-                        $output[] = "<p><b>Для детей</b>: {$data->forBabyString}</p>";
-                        $output[] = "<p><b>Прочее</b>: {$data->otherString}</p>";
+                        if ($data->mealsString) {
+                            $output[] = "<p><b>Питание</b>: {$data->mealsString}</p>";
+                        }
+                        if ($data->placeCategoryName) {
+                            $output[] = "<p><b>Расположение</b>: {$data->placeCategoryName} {$data->placeString}</p>";
+                        }
+                        if ($data->starsString) {
+                            $output[] = "<p><b>Звездность</b>: {$data->starsString}</p>";
+                        }
+                        if ($data->ratingString) {
+                            $output[] = "<p><b>Рейтинг</b>: {$data->ratingString}</p>";
+                        }
+                        if ($data->forBabyString) {
+                            $output[] = "<p><b>Для детей</b>: {$data->forBabyString}</p>";
+                        }
+                        if ($data->otherString) {
+                            $output[] = "<p><b>Прочее</b>: {$data->otherString}</p>";
+                        }
                         return implode("\n", $output);
                     },
                     'format' => 'raw'
@@ -132,11 +147,9 @@ $this->params['breadcrumbs'][] = $this->title;
         ]) ?>
         <?php } ?>
 
-
-
     <? } ?>
 
-    <? if ($hotels) { ?>
+    <? if (!empty($hotels)) { ?>
 
         <h2>Данные по конкретным отелям</h2>
 

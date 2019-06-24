@@ -109,7 +109,7 @@ class DictionaryController extends Controller
             ->all();
 
         $withoutFly = new \stdClass();
-        $withoutFly->id = '';
+        $withoutFly->id = '-1';
         $withoutFly->name = 'без перелета';
 
         $cities = array_merge(

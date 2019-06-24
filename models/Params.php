@@ -70,6 +70,7 @@ class Params extends \yii\db\ActiveRecord
     {
         $valueText = $this->value;
         switch ($this->category) {
+            case 'hotel_meal':
             case 'tour_meal':
                 if ($this->value == 'any') {
                     $valueText = 'Любое';

@@ -9,33 +9,14 @@ use yii\base\Model;
 use yii\db\ActiveRecord;
 use app\models\BookingHotels;
 use app\models\Params;
+use app\models\App;
 
 
 /**
  * BookingForm is the model behind the contact form.
  */
-class Booking extends ActiveRecord
+class Booking extends App
 {
-    /**
-     * Сценарий правил валидации для Нестандартного запроса
-     */
-    const SCENARIO_CUSTOM = 'custom';
-
-    /**
-     * Сценарий правил валидации на первом шаге сложной формы
-     */
-    const SCENARIO_FIRST_STEP = 'first_step';
-
-    /**
-     * Сценарий правил валидации для Турпакета
-     */
-    const SCENARIO_TOURS = 'tours';
-
-    /**
-     * Сценарий правил валидации для Конкретного отеля
-     */
-    const SCENARIO_HOTELS = 'hotels';
-
     /*
      * привязка к дополнительным параметрам
      */
@@ -81,26 +62,6 @@ class Booking extends ActiveRecord
 
 
         return $scenarios;
-    }
-    /*
-     *
-     */
-    public function attributeLabels()
-    {
-        return [
-            'name' => 'Ваше имя',
-            'phone' => 'Ваш телефон',
-            'email' => 'Ваш Email',
-            'parametrs' => 'Страна/Курорт/Отель',
-            'created_at' => 'Дата добавл.',
-            'wish' => 'Пожелания клиента',
-            'date_departure' => 'Дата вылета',
-            'persons' => 'Гости',
-            'budget' => 'Бюджет',
-            'tourist_city' => 'Город туриста',
-            'manager_id' => 'Менеджер',
-            'extended' => 'Доп.инфо',
-        ];
     }
 
     public function beforeSave($insert)

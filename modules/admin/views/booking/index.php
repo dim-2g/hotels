@@ -97,23 +97,25 @@ $this->params['breadcrumbs'][] = $this->title;
                             $output[] = "{$iter}." . implode(' / ', $row);
                             $iter++;
                         }
-                        $output[] = "<b>Доп.пожелания:</b><br /> {$data->extended['wish']}";
+                        if (!empty($data->extended['wish'])) {
+                            $output[] = "<b>Доп.пожелания:</b><br /> {$data->extended['wish']}";
+                        }
                         return implode("<br />", $output);
                     }
                     if ($data->type == 'hotels') {
                         $output = [];
-                        $cityDepartment = "Город вылета: {$data->extended['departmentCityName']}";
-                        $meals = "Питание: {$data->mealsString}";
+                        $output[] = "Город вылета: {$data->extended['departmentCityName']}";
+                        $output[] = "Питание: {$data->mealsString}";
                         $iter = 1;
                         foreach ($data->hotels as $hotel) {
                             $row = [];
-                            $row[] = $cityDepartment;
-                            $row[] = $meals;
                             $row[] = "Звездность: {$hotel->stars}";
                             $output[] = "{$iter}." . implode(' / ', $row);
                             $iter++;
                         }
-                        $output[] = "<b>Доп.пожелания:</b><br /> {$data->extended['wish']}";
+                        if (!empty($data->extended['wish'])) {
+                            $output[] = "<b>Доп.пожелания:</b><br /> {$data->extended['wish']}";
+                        }
                         return implode("<br />", $output);
                     }
                 },

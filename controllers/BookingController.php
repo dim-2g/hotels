@@ -194,17 +194,19 @@ class BookingController extends Controller
              * Если форма содержит Отели, сохраняем их
              */
             if (self::hasHotels($post)  && !empty($booking->id)) {
-                foreach ($post['hotels']['items'] as $iter => $item) {
-                    if (empty($item['active'])) continue;
-                    $hotels = new BookingHotels();
-                    $orderHotels = self::findFieldsForHotels($item);
-                    $orderHotels['booking_id'] = $booking->id;
-                    if ($hotels->load($orderHotels, '')) {
-                        if ($hotels->validate()) {
-                            $hotels->save();
+                if (!empty($post['hotels']['items'])) {
+                    foreach ($post['hotels']['items'] as $iter => $item) {
+                        if (empty($item['active'])) continue;
+                        $hotels = new BookingHotels();
+                        $orderHotels = self::findFieldsForHotels($item);
+                        $orderHotels['booking_id'] = $booking->id;
+                        if ($hotels->load($orderHotels, '')) {
+                            if ($hotels->validate()) {
+                                $hotels->save();
+                            }
                         }
+                        $errors['hotels_' . $iter] = $hotels->getErrors();
                     }
-                    $errors['hotels_' . $iter] = $hotels->getErrors();
                 }
 
                 /*

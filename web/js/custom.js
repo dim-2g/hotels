@@ -19,6 +19,9 @@ var orderTour = {
         } else {
             this.directions[index] = {[key]: value};
         }
+        if (!this.directions[index]['departmentId']) {
+            this.directions[index]['departmentId'] = '-1';
+        }
         this.directions[index].active = 1;
     },
 
@@ -39,7 +42,7 @@ var orderTour = {
 };
 
 var orderHotel = {
-    departmentId: '',
+    departmentId: '-1',
     meal: ['any'],
     hotels: [],
     addHotelParam: function(index, key, value) {
