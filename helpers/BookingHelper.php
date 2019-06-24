@@ -78,4 +78,12 @@ class BookingHelper{
         }
     }
 
+    /**
+     * Возвращает отформатированную строку для цен
+     */
+    public static function priceFormat($price)
+    {
+        return number_format($price, 0, '', ' ' );
+    }
+
 }

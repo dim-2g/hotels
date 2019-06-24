@@ -125,10 +125,10 @@ class BookingController extends Controller
 
         $booking = new Booking(['scenario' => Booking::SCENARIO_FIRST_STEP]);
 
-/*
+
         $transaction = Booking::getDb()->beginTransaction();
         try {
-*/
+
             /*
              * сохраняем простую форму, чтобы получить id для связи с расширенной, а также
              * дальнейшего заполнения на втором шаге
@@ -149,7 +149,6 @@ class BookingController extends Controller
                 if ($bookingExtended->load($orderData, '')) {
                     if ($bookingExtended->validate()) {
                         $bookingExtended->save();
-                        //$transaction->commit();
                     }
                 }
                 $errors['extended'] = $bookingExtended->getErrors();
@@ -232,23 +231,23 @@ class BookingController extends Controller
             //определим менеджера по заявке
             $booking->manager_id = self::findManagerToOrder($booking);
             $booking->save();
-/*
+            
+            foreach ($errors as $blockError) {
+                if (count($blockError) > 0) {
+                    $response['errors'] = array_merge(
+                        $response['errors'],
+                        BookingHelper::prepareErrorsAjaxForm($blockError)
+                    );
+                }
+            }
+            if (count($response['errors']) == 0) {
+                $transaction->commit();
+                $response['success'] = true;
+            }
+
         } catch (\Exception $e) {
             $response['data'] = [];
             $transaction->rollBack();
-        }
-*/
-
-        foreach ($errors as $blockError) {
-            if (count($blockError) > 0) {
-                $response['errors'] = array_merge(
-                    $response['errors'],
-                    BookingHelper::prepareErrorsAjaxForm($blockError)
-                );
-            }
-        }
-        if (count($response['errors']) == 0) {
-            $response['success'] = true;
         }
 
         return json_encode($response);
@@ -631,125 +630,6 @@ class BookingController extends Controller
     }
 
     /*
-     * Преобразуем данные для поля Дата вылета
-     * возвращает строку вида "01.01.19 + 5 дн / 7-14 нч."
-     */
-    public static function prepareDateDeparture($postData)
-    {
-        $output = [];
-        $dateFrom = \DateTime::createFromFormat('Y-m-d', $postData['general']['df']);
-        $dateTo = \DateTime::createFromFormat('Y-m-d', $postData['general']['dt']);
-        $days = $dateFrom->diff($dateTo);
-        $output[] = $dateFrom->format('d.m.y') . ' + ' . $days->format('%a дн.');
-
-        $nightFrom = $postData['general']['nf'];
-        $nightTo = $postData['general']['nt'];
-        if ($nightFrom != $nightTo) {
-            $output[] = $nightFrom . '-' . $nightTo . ' нч.';
-        } else {
-            $output[] = $nightFrom . ' нч.';
-        }
-        return implode(' / ', $output);
-    }
-
-    /*
-     * Преобразуем данные для поля Кол-во человек
-     * возвращает строку вида "1 взр. + 3 реб. (1,2,3 лет)"
-     */
-    public static function preparePersons($postData)
-    {
-        $output = [];
-        //добавляем взрослых
-        $output[] = $postData['general']['ad'] . ' взр.';
-        //добавляем детей
-        $childCount = $postData['general']['ch'];
-        if ($childCount > 0) {
-            $childAges = [];
-            foreach (['ch1', 'ch2', 'ch3'] as $age) {
-                if (!empty($postData['general'][$age])) {
-                    $childAges[] = $postData['general'][$age];
-                }
-            }
-            asort($childAges);
-            $output[] = $postData['general']['ch'] . ' реб. (' . implode(',', $childAges) . ' лет)';
-        }
-        return implode(' + ', $output);
-    }
-
-    /*
-     * Преобразуем данные для поля Бюджет
-     * возвращает строку вида "50 000 р" или "20 000 евро"
-     */
-    public static function prepareBudget($postData)
-    {
-        $output = [];
-        $currencyString = static::$currency[$postData['general']['cur']];
-        $priceFrom = static::priceFormat($postData['general']['pc']);
-        $output[] = $priceFrom;
-        if ($postData['general']['pt'] != 1000000) {
-            $priceMax = static::priceFormat($postData['general']['pt']);
-            $output[] = $priceMax;
-        }
-        return implode(' - ', $output) . ' ' . $currencyString;
-    }
-
-    /*
-     * Возвращает отформатированную строку для цен
-     */
-    public static function priceFormat($price)
-    {
-        return number_format($price, 0, '', ' ' );
-    }
-
-    /*
-     * Преобразуем данные для поля Направление
-     * возвращаем пронумерованные строки вида "1. Страна / Курорт(город) / Отель"
-     */
-    public static function prepareDirection($postData)
-    {
-        $output = [];
-        //если присутствуют данные по турпакетам
-        if (self::hasTours($postData)) {
-            $iter = 1;
-            foreach ($postData['tour']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                $countryName = $cityName = '';
-                if (!empty($item['countryId'])) {
-                    $countryName = static::findCountryNameById($item['countryId']);
-                }
-                if (!empty($item['cityId'])) {
-                    $cityName = static::findCityNameById($item['cityId']);
-                }
-                $output[] = "$iter. $countryName / $cityName";
-                $iter++;
-            }
-        }
-        //если присутствуют данные по Конкретным отелям
-        if (self::hasHotels($postData)) {
-            $iter = 1;
-            foreach ($postData['hotels']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                if (!empty($item['hotelId'])) {
-                    $hotel = HotelDictionary::find()
-                        ->with('resort')
-                        ->where(['id' => $item['hotelId']])
-                        ->asArray()
-                        ->one();
-                    $cityName = $hotel['resort']['name'];
-                    $countryName = static::findCountryNameById($hotel['resort']['country']);
-                    $hotelName = $hotel['name'];
-                    $output[] = "$iter. $countryName / $cityName / $hotelName";
-                    $iter++;
-                }
-            }
-        }
-
-        return implode("\n", $output);
-    }
-
-    /*
      * Получение названия страны по id
      */
     public static function findCountryNameById($id)
@@ -773,173 +653,6 @@ class BookingController extends Controller
             ->asArray()
             ->one();
         return $cityName['name'];
-    }
-
-    /*
-     * Преобразуем данные для поля Пожелания
-     */
-    public static function prepareWish($postData)
-    {
-        $output = [];
-        //если присутствуют данные по турпакетам
-        if (self::hasTours($postData)) {
-            $iter = 1;
-            foreach ($postData['tour']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                $outputRow = [];
-
-                //получаем Город вылета
-                if (!empty($item['departmentId'])) {
-                    $departmentCityName = static::findCityNameById($item['departmentId']);
-                } else {
-                    $departmentCityName = 'не указан';
-                }
-                $outputRow[] = 'Город вылета ' . $departmentCityName;
-
-                //получаем Звездность отеля
-                if (!empty($item['params']['tour_category'])) {
-                    if (self::isStarsAny($item['params']['tour_category'])) {
-                        $tmp[] = 'Любая';
-                    } else {
-                        $alloccat = AlloccatDictionary::find()
-                            ->select('name')
-                            ->where(['id' => $item['params']['tour_category'] ])
-                            ->asArray()
-                            ->all();
-                        $tmp = [];
-                        foreach ($alloccat as $alloccatItem) {
-                            $tmp[] = $alloccatItem['name'];
-                        }
-                    }
-                    $outputRow[] = 'Звездность ' . implode(',', $tmp);
-                }
-
-                //Получаем Рейтинг
-                if (!empty($item['params']['tour_rating'])) {
-                    foreach ($item['params']['tour_rating'] as $tourRating) {
-                        if ($tourRating == 'not_important') {
-                            $tourRating = 'не важен';
-                        }
-                        $outputRow[] = 'Рейтинг ' . $tourRating;
-                    }
-                }
-
-                //Получаем Питание
-                if (!empty($item['params']['tour_meal'])) {
-                    $tmp = [];
-                    foreach ($item['params']['tour_meal'] as $tourMeal) {
-                        if ($tourMeal == 'any') {
-                            $tourMeal = 'Любое питание';
-                        }
-                        $tmp[] = $tourMeal;
-                    }
-                    $outputRow[] = 'Питание ' . implode(',', $tmp);
-                }
-
-                //Получаем Расположение. Разбираем передаваемые данные
-                // Либо это в формате 3_2, где 3 - id категории, 2 - id удаленности
-                // Либо там any - кога выбран любой тип.
-                if (!empty($item['params']['tour_place'])) {
-                    $tmp = [];
-                    foreach ($item['params']['tour_place'] as $tourPlace) {
-                        if ($tourPlace == 'any') {
-                            $tourPlace = 'Любой тип';
-                            $placeCategoryName = 'Любой тип';
-                        } else {
-                            list($tourPlaceCategory, $tourPlaceId) = explode('_' , $tourPlace);
-                            $placeCategory = AllocPlaceTypeDictionary::find()
-                                ->select('name')
-                                ->where(['id' => $tourPlaceCategory])
-                                ->asArray()
-                                ->one();
-                            $placeCategoryName = $placeCategory['name'];
-                        }
-                        if (!empty($tourPlaceId)) {
-                            $tourPlace = AllocPlaceValueDictionary::find()
-                                ->select('name')
-                                ->where(['id' => $tourPlaceId, 'place' => $tourPlaceCategory])
-                                ->asArray()
-                                ->one();
-                            $tmp[] = $tourPlace['name'];
-                        }
-                    }
-
-                    $outputRow[] = 'Расположение ' . $placeCategoryName . ' ' . implode(',', $tmp);
-                }
-
-                //Параметры для детей
-                if (!empty($item['params']['tour_baby'])) {
-                    $tmp = [];
-                    foreach ($item['params']['tour_baby'] as $tourBaby) {
-                        $tmp[] = static::$childrenParams[$tourBaby];
-                    }
-                    $outputRow[] = 'Для детей ' . implode(',', $tmp);
-                }
-
-                //Прочие
-                if (!empty($item['params']['tour_other'])) {
-                    $tmp = [];
-                    foreach ($item['params']['tour_other'] as $tourOther) {
-                        $tmp[] = static::$otherParams[$tourOther];
-                    }
-                    $outputRow[] = 'Прочие ' . implode(',', $tmp);
-                }
-
-                $output[] = "$iter. " . implode(' / ', $outputRow);
-                $iter++;
-            }
-        }
-        //если присутствуют данные по Конкретным отелям
-        if (self::hasHotels($postData)) {
-            $iter = 1;
-            $outputRow = [];
-            //получаем Город вылета
-            if (!empty($postData['hotels']['departmentId'])) {
-                $departmentCityName = static::findCityNameById($postData['hotels']['departmentId']);
-            } else {
-                $departmentCityName = 'не указан';
-            }
-            $outputRow[] = 'Город вылета ' . $departmentCityName;
-
-            //Получаем Питание
-            if (!empty($postData['hotels']['meal'])) {
-                $tmp = [];
-                foreach ($postData['hotels']['meal'] as $tourMeal) {
-                    if ($tourMeal == 'any') {
-                        $tourMeal = 'Любое питание';
-                    }
-                    $tmp[] = $tourMeal;
-                }
-                $outputRow[] = 'Питание ' . implode(',', $tmp);
-            }
-
-            //Получаем звездность по первому отелю
-            $hotelStar = '';
-            foreach ($postData['hotels']['items'] as $item) {
-                //если active=0, значит строка была скрыта/удалена, поэтому пропустим ее
-                if (empty($item['active'])) continue;
-                if (!empty($item['hotelId'])) {
-                    $hotel = HotelDictionary::find()
-                        ->with('category')
-                        ->where(['id' => $item['hotelId']])
-                        ->asArray()
-                        ->one();
-                    $hotelStar = $hotel['category']['name'];
-                    break;
-                }
-            }
-            $outputRow[] = 'Звездность ' . $hotelStar;
-            //собираем воедино
-            $output[] = implode(' / ', $outputRow);
-        }
-
-        //добавим данные заполненные клиентом в поле Дополнительные пожелания
-        if (!empty($postData['params']['wish'])) {
-            $output[] = $postData['params']['wish'];
-        }
-
-        return implode("\n", $output);
     }
 
     /*

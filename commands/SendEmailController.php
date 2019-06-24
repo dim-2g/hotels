@@ -8,7 +8,7 @@
 namespace app\commands;
 
 use app\controllers\BookingController;
-use app\modules\admin\models\Booking;
+use app\models\Booking;
 use app\modules\admin\models\Manager;
 use yii\console\Controller;
 use yii\console\ExitCode;
